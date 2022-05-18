@@ -9,6 +9,58 @@
 // High 180x180
 // Ultra 200x200
 
+// Large performance increase
+p5.disableFriendlyErrors = true; // disables FES
+
+
+        // if (arr2d[x][y].getID() == 1) {
+        //   c = color(170, 120, 0); // Sand
+        // } else if (arr2d[x][y].getID() == 2) {
+        //   c = color(20, 20, 150); // Water
+        // } else if (arr2d[x][y].getID() == 3) {
+        //   c = color(70, 35, 0); // Wood
+        // } else if (arr2d[x][y].getID() == -1) {
+        //   lifeLeft = arr2d[x][y].getLifeTime();
+        //   lifeLeft = lifeLeft/2;
+        //   // Fire particles get more red as they cool
+        //   // (yellow -> orange -> red as life left decreases)
+        //   c = color(254+lifeLeft, 110+lifeLeft, 0);
+        // } else if (arr2d[x][y].getID() == -2) {
+        //   lifeLeft = -arr2d[x][y].getLifeTime();
+        //   lifeLeft = lifeLeft/2;
+        //   // Smoke gets lighter the closer it is to dissipating
+        //   // (lifeLeft is negative)
+        //   c = color(120+lifeLeft, 120+lifeLeft, 120+lifeLeft);
+let colorTable = {};
+let sandIndex = 0;
+let waterIndex = 0;
+let woodIndex = 0;
+function getColor(id) {
+  let color;
+  color = colorTable.sand[sandIndex];
+        // console.log("Setting color to: " + color);
+        sandIndex++;
+        sandIndex *= sandIndex != 1000;
+//   switch(id) {
+//       case 1: // sand
+        
+//         color = colorTable.sand[sandIndex];
+//         console.log("Setting color to: " + color);
+//         sandIndex++;
+//         sandIndex = sandIndex % 20;
+//         break;
+//   }
+  
+  return color;
+}
+
+function generateColors() {
+  colorTable.sand = [];
+  for (let i = 0; i < 1000; i++) {
+    colorTable.sand.push(color(170 + randInt(-20, 40), 120 + randInt(-10, 5), 0 + randInt(0, 15)));
+  }
+}
+
 // Particle types are:
 //  -2 -> Smoke
 //  -1 -> Fire
@@ -21,6 +73,7 @@ class Pixel {
     this.id = inputId;
     this.hasUpdated = inputUpdate;
     this.lifeTime = particleLifeTime;
+    this.color = getColor(inputId);
   }
   
   getUpdated() { return this.hasUpdated; }
@@ -105,6 +158,7 @@ function buildArray() {
 function setup() {
   createCanvas(2.5*arrWidth, arrHeight);
   loadGraphicsSetting(graphicsSetting);
+  generateColors();
   buildArray()
   pixelBuffer = createImage(arrWidth, arrHeight);
 
@@ -775,7 +829,7 @@ function draw() {
             continue;
           }
           if(drawingWith != 3 && drawingWith != 0) {
-            let randomSpread = Math.floor(random(0, 6));
+            let randomSpread = randInt(0, 6);
             if (randomSpread != 5) {
               continue;
             }
@@ -786,16 +840,16 @@ function draw() {
             arr2d[mouseX + j][mouseY+ i].setID(drawingWith);
             arr2d[mouseX + j][mouseY + i].setUpdated(false);
             if (drawingWith == -1) {
-              arr2d[mouseX + j][mouseY + i].setLifeTime(flameLife + Math.floor(random(-15, 15)));
+              arr2d[mouseX + j][mouseY + i].setLifeTime(flameLife + randInt(-15, 15));
             } else if (drawingWith == -2) {
-              arr2d[mouseX + j][mouseY + i].setLifeTime(smokeLife + Math.floor(random(-15, 15)));
+              arr2d[mouseX + j][mouseY + i].setLifeTime(smokeLife + randInt(-15, 15));
             }
           }
         }
       }
     }
   }
-  direction = Math.floor(random(0, 2));
+  direction = randInt(0, 2);
   
   // Compute a flammability matrix that each fire particle uses,
   // because doing random spreads for each particle individually
@@ -803,15 +857,15 @@ function draw() {
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
       if (j == 0) {
-        flammabilityMatrix[i][j] = random(0.1, 2.0);
+        flammabilityMatrix[i][j] = randFloat(0.1, 2.0);
       } else if (j == 1) {
-        flammabilityMatrix[i][j] = random(0.1, 0.5);
+        flammabilityMatrix[i][j] = randFloat(0.1, 0.5);
       } else {
-        flammabilityMatrix[i][j] = random(0, 0.24);
+        flammabilityMatrix[i][j] = randFloat(0, 0.24);
       }
     }
   }
-  flammabilityTime = 9 + Math.floor(random(0, 9));
+  flammabilityTime = 9 + randInt(0, 9);
   // print(flammabilityMatrix)
   // print(direction)
   if (evenFrame) {
@@ -830,38 +884,45 @@ function draw() {
   for (var y = 0; y < arrHeight; y++) {
       for (var x = 0; x < arrWidth; x++) {
         var c;
-        if (arr2d[x][y].getID() == 1) {
-          c = color(170, 120, 0);
-          pixelBuffer.set(x, y, c);
-          numParticles++;
-        } else if (arr2d[x][y].getID() == 2) {
-          c = color(20, 20, 150);
-          pixelBuffer.set(x, y, c);
-          numParticles++;
-        } else if (arr2d[x][y].getID() == 3) {
-          c = color(70, 35, 0);
-          pixelBuffer.set(x, y, c);
-          numParticles++;
-        } else if (arr2d[x][y].getID() == -1) {
-          lifeLeft = arr2d[x][y].getLifeTime();
-          lifeLeft = lifeLeft/2;
-          // Fire particles get more red as they cool
-          // (yellow -> orange -> red as life left decreases)
-          c = color(254+lifeLeft, 110+lifeLeft, 0);
-          pixelBuffer.set(x, y, c);
-          numParticles++;
-        } else if (arr2d[x][y].getID() == -2) {
-          lifeLeft = -arr2d[x][y].getLifeTime();
-          lifeLeft = lifeLeft/2;
-          // Smoke gets lighter the closer it is to dissipating
-          // (lifeLeft is negative)
-          c = color(120+lifeLeft, 120+lifeLeft, 120+lifeLeft);
-          pixelBuffer.set(x, y, c);
-          numParticles++;
-        } else {
-          c = color(0, 0, 0);
+        
+        const particle = arr2d[x][y];
+        const particleId = particle.getID();
+        switch(particleId) {
+          case 1: // Sand
+            c = particle.color;
+            pixelBuffer.set(x, y, c);
+            numParticles++;
+            break;
+          case 2: // Water
+            c = color(20, 20, 150);
+            pixelBuffer.set(x, y, c);
+            numParticles++;
+            break;
+          case 3: // Wood
+            c = color(70, 35, 0);
+            pixelBuffer.set(x, y, c);
+            numParticles++;
+            break;
+          case -1: // Fire
+            lifeLeft = particle.getLifeTime();
+            lifeLeft = lifeLeft/2;
+            // Fire particles get more red as they cool
+            // (yellow -> orange -> red as life left decreases)
+            c = color(254+lifeLeft, 110+lifeLeft, 0);
+            pixelBuffer.set(x, y, c);
+            numParticles++;
+            break;
+          case -2: // Smoke
+            lifeLeft = -particle.getLifeTime();
+            lifeLeft = lifeLeft/2;
+            // Smoke gets lighter the closer it is to dissipating
+            // (lifeLeft is negative)
+            c = color(120+lifeLeft, 120+lifeLeft, 120+lifeLeft);
+            pixelBuffer.set(x, y, c);
+            numParticles++;
+            break;
         }
-        // img.set(x, y, c);
+
         arr2d[x][y].setUpdated(false);
       }
   }
@@ -987,6 +1048,8 @@ function mouseClicked() {
 
     background(220);
   }
+  
+  // resize(500, 500);
 }
 
 function keyTyped() {
@@ -1001,7 +1064,7 @@ function keyTyped() {
   } else if (key === 'f') {
     drawingWith = -1;
   } else if (key === 'p') {
-    if (brushSize < min(arrWidth, arrHeight)) {
+    if (brushSize < Math.min(arrWidth, arrHeight)) {
       brushSize++;
     }
   } else if (key === 'l') {
