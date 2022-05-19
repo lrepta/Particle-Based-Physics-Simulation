@@ -435,6 +435,11 @@ function updateWaterRight(xPos, yPos) {
 }
 
 function updateFire(xPos, yPos) {
+  // const bottomBoundary = (yPos != arrHeight-1) * 2;
+  // const topBoundary = (yPos != 0) * -1;
+  // const leftBoundary = (xPos != 0) * -1;
+  // const rightBoundary = ()
+
   if (arr2d[xPos][yPos].getUpdated() == true) {
     return;
   }
@@ -491,21 +496,23 @@ function updateFire(xPos, yPos) {
   
   // Fire only falls Down
   if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() == 0) {
-    arr2d[xPos][yPos + 1].setID(-1);
-    arr2d[xPos][yPos + 1].setUpdated(true);
-    arr2d[xPos][yPos + 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos][yPos + 1].setID(-1);
+    // arr2d[xPos][yPos + 1].setUpdated(true);
+    // arr2d[xPos][yPos + 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
   // Fire can fall through smoke
   } else if (yPos != arrHeight - 1 && 
              arr2d[xPos][yPos + 1].getID() == -2) {
-    smokeLifeTime = arr2d[xPos][yPos + 1].getLifeTime();
-    arr2d[xPos][yPos + 1].setID(-1);
-    arr2d[xPos][yPos + 1].setUpdated(true);
-    arr2d[xPos][yPos + 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // smokeLifeTime = arr2d[xPos][yPos + 1].getLifeTime();
+    // arr2d[xPos][yPos + 1].setID(-1);
+    // arr2d[xPos][yPos + 1].setUpdated(true);
+    // arr2d[xPos][yPos + 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setID(-2);
-    arr2d[xPos][yPos].setLifeTime(smokeLifeTime);
+    // arr2d[xPos][yPos].setID(-2);
+    // arr2d[xPos][yPos].setLifeTime(smokeLifeTime);
+    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
     // arr2d[xPos][yPos].setUpdated(true);
   // If fire lands on water, exstinguish and create steam (smoke)
   } else if (yPos != arrHeight - 1 && 
@@ -574,21 +581,23 @@ function updateFireRight(xPos, yPos) {
   
   // Fire only falls Down
   if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() == 0) {
-    arr2d[xPos][yPos + 1].setID(-1);
-    arr2d[xPos][yPos + 1].setUpdated(true);
-    arr2d[xPos][yPos + 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos][yPos + 1].setID(-1);
+    // arr2d[xPos][yPos + 1].setUpdated(true);
+    // arr2d[xPos][yPos + 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
   // Fire can fall through smoke
   } else if (yPos != arrHeight - 1 && 
              arr2d[xPos][yPos + 1].getID() == -2) {
-    smokeLifeTime = arr2d[xPos][yPos + 1].getLifeTime();
-    arr2d[xPos][yPos + 1].setID(-1);
-    arr2d[xPos][yPos + 1].setUpdated(true);
-    arr2d[xPos][yPos + 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // smokeLifeTime = arr2d[xPos][yPos + 1].getLifeTime();
+    // arr2d[xPos][yPos + 1].setID(-1);
+    // arr2d[xPos][yPos + 1].setUpdated(true);
+    // arr2d[xPos][yPos + 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setID(-2);
-    arr2d[xPos][yPos].setLifeTime(smokeLifeTime);
+    // arr2d[xPos][yPos].setID(-2);
+    // arr2d[xPos][yPos].setLifeTime(smokeLifeTime);
+    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
     // arr2d[xPos][yPos].setUpdated(true);
   // If fire lands on water, exstinguish and create steam (smoke)
   } else if (yPos != arrHeight - 1 && 
@@ -617,40 +626,45 @@ function updateSmoke(xPos, yPos) {
 
   // Up
   if (arr2d[xPos][yPos - 1].getID() == 0) {
-    arr2d[xPos][yPos - 1].setID(-2);
-    arr2d[xPos][yPos - 1].setUpdated(true);
-    arr2d[xPos][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos][yPos - 1].setID(-2);
+    // arr2d[xPos][yPos - 1].setUpdated(true);
+    // arr2d[xPos][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos][yPos - 1]);
   // Up-Left
   } else if (xPos != 0 && arr2d[xPos - 1][yPos - 1].getID() == 0) {
-    arr2d[xPos - 1][yPos - 1].setID(-2);
-    arr2d[xPos - 1][yPos - 1].setUpdated(true);
-    arr2d[xPos - 1][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos - 1][yPos - 1].setID(-2);
+    // arr2d[xPos - 1][yPos - 1].setUpdated(true);
+    // arr2d[xPos - 1][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos - 1]);
   // Up-Right
   } else if (xPos != arrWidth - 1 &&
              arr2d[xPos + 1][yPos - 1].getID() == 0) {
-    arr2d[xPos + 1][yPos - 1].setID(-2);
-    arr2d[xPos + 1][yPos - 1].setUpdated(true);
-    arr2d[xPos + 1][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos + 1][yPos - 1].setID(-2);
+    // arr2d[xPos + 1][yPos - 1].setUpdated(true);
+    // arr2d[xPos + 1][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos - 1]);
   // Left
   } else if (xPos != 0 && arr2d[xPos - 1][yPos].getID() == 0) {
-    arr2d[xPos - 1][yPos].setID(-2);
-    arr2d[xPos - 1][yPos].setUpdated(true);
-    arr2d[xPos - 1][yPos].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos - 1][yPos].setID(-2);
+    // arr2d[xPos - 1][yPos].setUpdated(true);
+    // arr2d[xPos - 1][yPos].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos]);
   // Right
   } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos].getID() == 0) {
-    arr2d[xPos + 1][yPos].setID(-2);
-    arr2d[xPos + 1][yPos].setUpdated(true);
-    arr2d[xPos + 1][yPos].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos + 1][yPos].setID(-2);
+    // arr2d[xPos + 1][yPos].setUpdated(true);
+    // arr2d[xPos + 1][yPos].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos]);
   }
 }
 
@@ -672,40 +686,45 @@ function updateSmokeRight(xPos, yPos) {
 
   // Up
   if (arr2d[xPos][yPos - 1].getID() == 0) {
-    arr2d[xPos][yPos - 1].setID(-2);
-    arr2d[xPos][yPos - 1].setUpdated(true);
-    arr2d[xPos][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos][yPos - 1].setID(-2);
+    // arr2d[xPos][yPos - 1].setUpdated(true);
+    // arr2d[xPos][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos][yPos - 1]);
   // Up-Right
   } else if (xPos != arrWidth - 1 &&
              arr2d[xPos + 1][yPos - 1].getID() == 0) {
-    arr2d[xPos + 1][yPos - 1].setID(-2);
-    arr2d[xPos + 1][yPos - 1].setUpdated(true);
-    arr2d[xPos + 1][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos + 1][yPos - 1].setID(-2);
+    // arr2d[xPos + 1][yPos - 1].setUpdated(true);
+    // arr2d[xPos + 1][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos - 1]);
   // Up-left
   } else if (xPos != 0 && arr2d[xPos - 1][yPos - 1].getID() == 0) {
-    arr2d[xPos - 1][yPos - 1].setID(-2);
-    arr2d[xPos - 1][yPos - 1].setUpdated(true);
-    arr2d[xPos - 1][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos - 1][yPos - 1].setID(-2);
+    // arr2d[xPos - 1][yPos - 1].setUpdated(true);
+    // arr2d[xPos - 1][yPos - 1].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos - 1]);
   // Right
   } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos].getID() == 0) {
-    arr2d[xPos + 1][yPos].setID(-2);
-    arr2d[xPos + 1][yPos].setUpdated(true);
-    arr2d[xPos + 1][yPos].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos + 1][yPos].setID(-2);
+    // arr2d[xPos + 1][yPos].setUpdated(true);
+    // arr2d[xPos + 1][yPos].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos]);
   // Left
   } else if (xPos != 0 && arr2d[xPos - 1][yPos].getID() == 0) {
-    arr2d[xPos - 1][yPos].setID(-2);
-    arr2d[xPos - 1][yPos].setUpdated(true);
-    arr2d[xPos - 1][yPos].setLifeTime(arr2d[xPos][yPos].getLifeTime());
+    // arr2d[xPos - 1][yPos].setID(-2);
+    // arr2d[xPos - 1][yPos].setUpdated(true);
+    // arr2d[xPos - 1][yPos].setLifeTime(arr2d[xPos][yPos].getLifeTime());
     
-    arr2d[xPos][yPos].setEmpty();
+    // arr2d[xPos][yPos].setEmpty();
+    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos]);
   }
 }
 
