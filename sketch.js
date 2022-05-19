@@ -35,29 +35,43 @@ let colorTable = {};
 let sandIndex = 0;
 let waterIndex = 0;
 let woodIndex = 0;
+
+// THIS HAS A SET COLOR FOR EVERY POSITION
+// CODE NEEDS SERIOUS REFACTORING TO SUPPORT PER PIXEL
+// COLOR/DATA STORAGE
 function getColor(id) {
   let color;
   color = colorTable.sand[sandIndex];
+  // console.log(id)
         // console.log("Setting color to: " + color);
         sandIndex++;
         sandIndex *= sandIndex != 1000;
-//   switch(id) {
-//       case 1: // sand
-        
-//         color = colorTable.sand[sandIndex];
-//         console.log("Setting color to: " + color);
-//         sandIndex++;
-//         sandIndex = sandIndex % 20;
-//         break;
-//   }
+  switch(id) {
+      case 1: // sand
+        color = colorTable.sand[sandIndex];
+        // console.log("Setting color to: " + color);
+        sandIndex++;
+        sandIndex = sandIndex % 20;
+        break;
+      case 2: // water
+        color = colorTable.water[sandIndex];
+        // console.log("Setting color to: " + color);
+        sandIndex++;
+        sandIndex = sandIndex % 20;
+        break;
+      default:
+        break;
+  }
   
   return color;
 }
 
 function generateColors() {
   colorTable.sand = [];
+  colorTable.water = [];
   for (let i = 0; i < 1000; i++) {
     colorTable.sand.push(color(170 + randInt(-20, 40), 120 + randInt(-10, 5), 0 + randInt(0, 15)));
+    colorTable.water.push(color(20 + randInt(-5,5), 20 + randInt(-5,5), 150 + randInt(-5,15)));
   }
 }
 
@@ -80,7 +94,10 @@ class Pixel {
   setUpdated(status) { this.hasUpdated = status; }
   
   getID() { return this.id; }
-  setID(newID) { this.id = newID; }
+  setID(newID) { 
+    this.id = newID;
+    this.color = getColor(newID);
+  }
   
   getLifeTime() { return this.lifeTime; }
   setLifeTime(time) { this.lifeTime = time; }
@@ -881,8 +898,8 @@ function draw() {
   
 
   numParticles = 0;
-  for (var y = 0; y < arrHeight; y++) {
-      for (var x = 0; x < arrWidth; x++) {
+  for (var y = 0; y < arrHeight; ++y) {
+      for (var x = 0; x < arrWidth; ++x) {
         var c;
         
         const particle = arr2d[x][y];
@@ -894,7 +911,8 @@ function draw() {
             numParticles++;
             break;
           case 2: // Water
-            c = color(20, 20, 150);
+            // c = color(20, 20, 150);
+            c = particle.color;
             pixelBuffer.set(x, y, c);
             numParticles++;
             break;
@@ -923,7 +941,7 @@ function draw() {
             break;
         }
 
-        arr2d[x][y].setUpdated(false);
+        particle.setUpdated(false);
       }
   }
 
