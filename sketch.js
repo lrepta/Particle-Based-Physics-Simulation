@@ -32,46 +32,57 @@ p5.disableFriendlyErrors = true; // disables FES
         //   // (lifeLeft is negative)
         //   c = color(120+lifeLeft, 120+lifeLeft, 120+lifeLeft);
 let colorTable = {};
-let sandIndex = 0;
-let waterIndex = 0;
-let woodIndex = 0;
+let colorIndex = 0;
 
 // THIS HAS A SET COLOR FOR EVERY POSITION
 // CODE NEEDS SERIOUS REFACTORING TO SUPPORT PER PIXEL
 // COLOR/DATA STORAGE
 function getColor(id) {
   let color;
-  color = colorTable.sand[sandIndex];
-  // console.log(id)
-        // console.log("Setting color to: " + color);
-        sandIndex++;
-        sandIndex *= sandIndex != 1000;
+  color = colorTable.sand[colorIndex];
   switch(id) {
       case 1: // sand
-        color = colorTable.sand[sandIndex];
-        // console.log("Setting color to: " + color);
-        sandIndex++;
-        sandIndex = sandIndex % 20;
+        color = colorTable.sand[colorIndex];
         break;
       case 2: // water
-        color = colorTable.water[sandIndex];
-        // console.log("Setting color to: " + color);
+        color = colorTable.water[colorIndex];
         sandIndex++;
-        sandIndex = sandIndex % 20;
+        break;
+      case 3: // wood
+        color = colorTable.wood[colorIndex];
+        break;
+      case -1: // fire
+        color = colorTable.fire[colorIndex];
+        break;
+      case -2: // smoke
+        color = colorTable.wood[colorIndex];
         break;
       default:
         break;
   }
+  colorIndex++;
+  colorIndex = colorIndex * (colorIndex < flameLife);
   
   return color;
+}
+
+Number.prototype.map = function (in_min, in_max, out_min, out_max) {
+  return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 function generateColors() {
   colorTable.sand = [];
   colorTable.water = [];
-  for (let i = 0; i < 1000; i++) {
-    colorTable.sand.push(color(170 + randInt(-20, 40), 120 + randInt(-10, 5), 0 + randInt(0, 15)));
+  colorTable.wood = [];
+  colorTable.fire = [];
+  colorTable.smoke = [];
+  for (let i = 0; i < flameLife; i++) {
+    colorTable.sand.push(color(170 + randInt(-10, 40), 120 + randInt(-10, 0), 0 + randInt(0, 5)));
     colorTable.water.push(color(20 + randInt(-5,5), 20 + randInt(-5,5), 150 + randInt(-5,15)));
+    colorTable.wood.push(color(70 + randInt(-5,5), 35 + randInt(-5,5), 0 + randInt(0,10)));
+    colorTable.fire.push(color(i.map(0, flameLife, 200, 255), i.map(0, flameLife, 60, 255), 0));
+    let smokeVal = i.map(0, flameLife, 0, 120);
+    colorTable.smoke.push(color(220-smokeVal, 220-smokeVal, 220-smokeVal));
   }
 }
 
@@ -124,6 +135,15 @@ class Pixel {
     // // this.hasUpdated = temp.hasUpdated;
     // // this.lifeTime = temp.lifeTime;
     // // this.color = temp.color;
+  }
+
+  updateColor() {
+    if (this.id == -1) {
+      this.color = colorTable.fire[this.lifeTime];
+    } else {
+      this.color = colorTable.smoke[this.lifeTime];
+    }
+    
   }
   
   getLifeTime() { return this.lifeTime; }
@@ -187,6 +207,7 @@ function loadGraphicsSetting(level) {
     UItextSize = 13;
   }
   brushSize = 2;
+  generateColors();
   // buildArray();
 }
 
@@ -209,7 +230,7 @@ function buildArray() {
 function setup() {
   createCanvas(2.5*arrWidth, arrHeight);
   loadGraphicsSetting(graphicsSetting);
-  generateColors();
+  // generateColors();
   buildArray()
   pixelBuffer = createImage(arrWidth, arrHeight);
 
@@ -969,25 +990,37 @@ function draw() {
             numParticles++;
             break;
           case 3: // Wood
-            c = color(70, 35, 0);
+            // c = color(70, 35, 0);
+            c = particle.color;
             pixelBuffer.set(x, y, c);
             numParticles++;
             break;
           case -1: // Fire
-            lifeLeft = particle.getLifeTime();
-            lifeLeft = lifeLeft/2;
+            // lifeLeft = particle.getLifeTime();
+            // lifeLeft = lifeLeft/2;
+            // c = particle.color;
+            // c.setRed(254+lifeLeft);
+            // c.setGreen(110+lifeLeft);
+            particle.updateColor();
+            c = particle.color;
             // Fire particles get more red as they cool
             // (yellow -> orange -> red as life left decreases)
-            c = color(254+lifeLeft, 110+lifeLeft, 0);
+            // c = color(254+lifeLeft, 110+lifeLeft, 0);
             pixelBuffer.set(x, y, c);
             numParticles++;
             break;
           case -2: // Smoke
-            lifeLeft = -particle.getLifeTime();
-            lifeLeft = lifeLeft/2;
+            particle.updateColor();
+            c = particle.color;
+            // lifeLeft = -particle.getLifeTime();
+            // lifeLeft = lifeLeft/2;
+            // c = particle.color;
+            // c.setRed(120+lifeLeft);
+            // c.setGreen(120+lifeLeft);
+            // c.setBlue(120+lifeLeft);
             // Smoke gets lighter the closer it is to dissipating
             // (lifeLeft is negative)
-            c = color(120+lifeLeft, 120+lifeLeft, 120+lifeLeft);
+            // c = color(120+lifeLeft, 120+lifeLeft, 120+lifeLeft);
             pixelBuffer.set(x, y, c);
             numParticles++;
             break;
