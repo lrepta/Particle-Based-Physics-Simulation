@@ -39,14 +39,12 @@ let colorIndex = 0;
 // COLOR/DATA STORAGE
 function getColor(id) {
   let color;
-  color = colorTable.sand[colorIndex];
   switch(id) {
       case 1: // sand
         color = colorTable.sand[colorIndex];
         break;
       case 2: // water
         color = colorTable.water[colorIndex];
-        sandIndex++;
         break;
       case 3: // wood
         color = colorTable.wood[colorIndex];
@@ -217,134 +215,150 @@ function setup() {
 }
 
 function updateSand(xPos, yPos) {
-  if (arr2d[xPos][yPos].getUpdated() == true || yPos == arrHeight - 1) {
+  const center = arr2d[xPos][yPos];
+  if (center.getUpdated() == true || yPos == arrHeight - 1) {
     return;
   }
+  const down = arr2d[xPos][yPos + 1];
+  const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
+  const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
 
 // Down, through empty space, fire, or smoke
-  if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() <= 0) {
-    if (arr2d[xPos][yPos + 1].getID() == -1) {
-      arr2d[xPos][yPos + 1].setID(-2);
-      arr2d[xPos][yPos + 1].setLifeTime(smokeLife/6);
-    }
-    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
+  if (down.getID() <= 0) {
+    down.setID(-2);
+    swap(center, down);
 
   // Down through water
-  } else if (arr2d[xPos][yPos + 1].getID() == 2 && arr2d[xPos][yPos + 1].getUpdated() == false) {
-    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
+  } else if (down.getID() == 2 && !down.getUpdated()) {
+    swap(center, down);
 
   // Down-Left
-  } else if (xPos != 0 && arr2d[xPos - 1][yPos + 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos + 1]);
+  } else if (downLeft && downLeft.getID() == 0) {
+    swap(center, downLeft);
 
   // Down-Right
-  } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos + 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos + 1]);
+  } else if (downRight && downRight.getID() == 0) {
+    swap(center, downRight);
   }
 }
 
 function updateSandRight(xPos, yPos) {
-  if (arr2d[xPos][yPos].getUpdated() == true || yPos == arrHeight - 1) {
+  const center = arr2d[xPos][yPos];
+  if (center.getUpdated() || yPos == arrHeight - 1) {
     return;
   }
+  const down = arr2d[xPos][yPos + 1];
+  const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
+  const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
 
 // Down, through empty space, fire, or smoke
-  if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() <= 0) {
-    if (arr2d[xPos][yPos + 1].getID() == -1) {
-      arr2d[xPos][yPos + 1].setID(-2);
-      arr2d[xPos][yPos + 1].setLifeTime(smokeLife/6);
-    }
-    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
+  if (down.getID() <= 0) {
+    down.setID(-2);
+    swap(center, down);
 
   // Down through water
-  } else if (arr2d[xPos][yPos + 1].getID() == 2 && arr2d[xPos][yPos + 1].getUpdated() == false) {
-    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
+  } else if (down.getID() == 2 && !down.getUpdated()) {
+    swap(center, down);
 
   // Down-Right
-  } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos + 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos + 1]);
+  } else if (downRight && downRight.getID() == 0) {
+    swap(center, downRight);
 
   // Down-Left
-  }else if (xPos != 0 && arr2d[xPos - 1][yPos + 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos + 1]);
+  } else if (downLeft && downLeft.getID() == 0) {
+    swap(center, downLeft);
   }
 }
 
 function updateWater(xPos, yPos) {
-  if (arr2d[xPos][yPos].getUpdated() == true) {
+  const center = arr2d[xPos][yPos];
+  if (center.getUpdated() == true) {
     return;
   }
+  
+  const down = arr2d[xPos]?.[yPos + 1] ?? 0;
+  const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
+  const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
+  const left = arr2d[xPos - 1]?.[yPos] ?? 0;
+  const right = arr2d[xPos + 1]?.[yPos] ?? 0;
 
   // Down, through empty space, fire, or smoke
-  if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() <= 0) {
-    if (arr2d[xPos][yPos + 1].getID() == -1) {
-      arr2d[xPos][yPos + 1].setID(-2);
-      arr2d[xPos][yPos + 1].setLifeTime(smokeLife/3);
+  if (down && down.getID() <= 0) {
+    if (down.getID() == -1) {
+      down.setID(-2);
+      down.setLifeTime(smokeLife/3);
     }
-    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
+    swap(center, down);
     
   // Down-Left
-  } else if (xPos != 0 && yPos != arrHeight - 1 && arr2d[xPos - 1][yPos + 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
+  } else if (downLeft && downLeft.getID() == 0) {
+    swap(center, downLeft);
 
   // Down-Right
-  } else if (xPos != arrWidth - 1 && yPos != arrHeight - 1 && arr2d[xPos + 1][yPos + 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos + 1]);
+  } else if (downRight && downRight.getID() == 0) {
+    swap(center, downRight);
 
   // Left
-  } else if (xPos != 0 && arr2d[xPos - 1][yPos].getID() <= 0) {
-    if (arr2d[xPos - 1][yPos].getID() == -1) {
-      arr2d[xPos - 1][yPos].setID(-2);
-      arr2d[xPos - 1][yPos].setLifeTime(smokeLife/3);
+  } else if (left && left.getID() <= 0) {
+    if (left.getID() == -1) {
+      left.setID(-2);
+      left.setLifeTime(smokeLife/3);
     }
-    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos]);
+    swap(center, left);
 
   // Right
-  } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos].getID() == 0) {
-    if (arr2d[xPos + 1][yPos].getID() == -1) {
-      arr2d[xPos + 1][yPos].setID(-2);
-      arr2d[xPos + 1][yPos].setLifeTime(smokeLife/3);
+  } else if (right && right.getID() == 0) {
+    if (right.getID() == -1) {
+      right.setID(-2);
+      right.setLifeTime(smokeLife/3);
     }
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos]);
+    swap(center, right);
   }
 }
 
 function updateWaterRight(xPos, yPos) {
-  if (arr2d[xPos][yPos].getUpdated() == true) {
+  const center = arr2d[xPos][yPos];
+  if (center.getUpdated() == true) {
     return;
   }
 
+  const down = arr2d[xPos]?.[yPos + 1] ?? 0;
+  const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
+  const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
+  const left = arr2d[xPos - 1]?.[yPos] ?? 0;
+  const right = arr2d[xPos + 1]?.[yPos] ?? 0;
+
   // Down, through empty space, fire, or smoke
-  if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() <= 0) {
-    if (arr2d[xPos][yPos + 1].getID() == -1) {
-      arr2d[xPos][yPos + 1].setID(-2);
-      arr2d[xPos][yPos + 1].setLifeTime(smokeLife/3);
+  if (down && down.getID() <= 0) {
+    if (down.getID() == -1) {
+      down.setID(-2);
+      down.setLifeTime(smokeLife/3);
     }
-    swap(arr2d[xPos][yPos], arr2d[xPos][yPos + 1]);
+    swap(center, down);
 
   // Down-Right
-  } else if (xPos != arrWidth - 1 && yPos != arrHeight - 1 && arr2d[xPos + 1][yPos + 1].getID() < 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos + 1]);
+  } else if (downRight && downRight.getID() < 0) {
+    swap(center, downRight);
 
   // Down-Left
-  } else if (xPos != 0 && yPos != arrHeight - 1 && arr2d[xPos - 1][yPos + 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos + 1]);
+  } else if (downLeft && downLeft.getID() == 0) {
+    swap(center, downLeft);
 
   // Right
-  } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos].getID() == 0) {
-    if (arr2d[xPos + 1][yPos].getID() == -1) {
-      arr2d[xPos + 1][yPos].setID(-2);
-      arr2d[xPos + 1][yPos].setLifeTime(smokeLife/3);
+  } else if (right && right.getID() == 0) {
+    if (right.getID() == -1) {
+      right.setID(-2);
+      right.setLifeTime(smokeLife/3);
     }
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos]);
+    swap(center, right);
 
   // Left
-  } else if (xPos != 0 && arr2d[xPos - 1][yPos].getID() == 0) {
-    if (arr2d[xPos - 1][yPos].getID() == -1) {
-      arr2d[xPos - 1][yPos].setID(-2);
-      arr2d[xPos - 1][yPos].setLifeTime(smokeLife/3);
+  } else if (left && left.getID() == 0) {
+    if (left.getID() == -1) {
+      left.setID(-2);
+      left.setLifeTime(smokeLife/3);
     }
-    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos]);
+    swap(center, left);
   }
 }
 
