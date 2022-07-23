@@ -1,0 +1,65 @@
+const brushSizeSlider = document.getElementById("brushSize");
+
+window.updateBrushSize = function() {
+  brushSize = parseInt(brushSizeSlider.value);
+}
+
+window.updateMouseDrawing = function() {
+
+
+  //   function getMousePos(evt) {
+  //     var rect = onscreenCanvas.getBoundingClientRect();
+  //     return {
+  //         x: (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+  //         y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+  //     };
+  // }
+  
+    // let canvas = document.getElementById("glcanvas");
+  
+    // window.width = onscreenCanvas.clientWidth;
+    // window.height = onscreenCanvas.clientHeight;
+    // let moved = false;
+    drawing = false;
+    let mouseDownListener = (e) => {
+        // moved = true;
+        // const rect = onscreenCanvas.getBoundingClientRect();
+        // const x = (e.clientX - rect.left) / (rect.right - rect.left) * onscreenCanvas.width;
+        // const y = (e.clientY - rect.top) / (rect.bottom - rect.top) * onscreenCanvas.height;
+  
+        drawing = true;
+        mx = e.clientX;
+        my = e.clientY;
+    }
+    onscreenCanvas.addEventListener("mousedown", mouseDownListener);
+    let mouseMoveListener = (e) => {
+        if(drawing) {
+          // const rect = onscreenCanvas.getBoundingClientRect();
+          mx = e.clientX;
+          my = e.clientY;
+          // mx = (e.clientX - rect.left) / (rect.right - rect.left) * onscreenCanvas.width;
+          // mx = map(0, )
+          // my = (e.clientY - rect.top) / (rect.bottom - rect.top) * onscreenCanvas.height;
+            // currRotate += 360 * e.movementX/onscreenCanvas.clientWidth;
+            // // Bind rotation to 0-360
+            // // Supports rotating infinitely in any direction,
+            // // as the degrees get reset when reaching 360 or 0
+            // if (currRotate > 360) {
+            //     currRotate = 0;
+            // } else if (currRotate < 0) {
+            //     currRotate = 360;
+            // }
+  
+            // currZoom += -200 * e.movementY/onscreenCanvas.clientHeight;
+            // // bind zoom from 1 to 100
+            // currZoom = Math.max(1, currZoom);
+            // currZoom = Math.min(100, currZoom);
+        }
+    }
+    onscreenCanvas.addEventListener("mousemove", mouseMoveListener);
+    
+    let mouseUpListener = (e) => {
+        drawing = false;
+    }
+    onscreenCanvas.addEventListener("mouseup", mouseUpListener);
+  }

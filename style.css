@@ -4,4 +4,11 @@ html, body {
 }
 canvas {
   display: block;
+  width: 50%;
+  height: 50%;
+}
+
+.graphicsButton {
+  width: 5vmin;
+  height: 3vmin;
 }

@@ -26,8 +26,8 @@ const gameImagedata32 = new Uint32Array(gameImagedata.data.buffer);
 
 function init() {
   var gameWrapper = document.getElementById("gameWrapper");
-  gameWrapper.style.height = size + "px";
-  gameWrapper.style.width = size + "px";
+  // gameWrapper.style.height = size + "px";
+  // gameWrapper.style.width = size + "px";
 
   /* setting FPS must occur before initMenu() */
   // setFPS(DEFAULT_FPS);
@@ -56,7 +56,7 @@ function init() {
 window.onload = function () {
   init();
   setup();
-  window.updateRotateAndZoom();
+  window.updateMouseDrawing();
   mainLoop(0);
 };
 
@@ -170,11 +170,11 @@ function mainLoop(now) {
       for (var x = 0; x < arrWidth; ++x) {
         var c;
         
-        const particle = arr2d[x][y];
-        const particleId = particle.getID();
+        // const particle = arr2d[x][y];
+        // const particleId = particle.getID();
         // gameImagedata32[x + size*y] = BACKGROUND;
         // // ++numParticles;
-        gameImagedata32[x + size*y] = particle.col;
+        gameImagedata32[x + size*y] = arr2d[x][y].col;
         // switch(particleId) {
         //   case 1: // Sand
         //   //  c = particle.color;
@@ -243,7 +243,7 @@ function mainLoop(now) {
         //     break;
         // }
 
-        particle.setUpdated(false);
+        arr2d[x][y].setUpdated(false);
       }
   }
 
@@ -257,6 +257,7 @@ function mainLoop(now) {
   // updateGame();
 
   drawCanvas();
+  evenFrame = !evenFrame;
 }
 
 var __next_elem_idx = 0;
@@ -311,7 +312,7 @@ const functions = new Array(functionsLeft, functionsRight);
 // Ultra 200x200
 
 // Large performance increase
-p5.disableFriendlyErrors = true; // disables FES
+// p5.disableFriendlyErrors = true; // disables FES
 
 
 let colorTable = {};
@@ -495,7 +496,7 @@ let UItextSize = 11;
 
 let evenFrame = true;
 
-function loadGraphicsSetting(level) {
+window.loadGraphicsSetting = function(level) {
   if (level == 0) {
     // Graphics setting = low
     arrWidth = 100;
@@ -525,9 +526,9 @@ function loadGraphicsSetting(level) {
     smokeLife = 210;
     UItextSize = 13;
   }
-  brushSize = 2;
+  // brushSize = 2;
   generateColors();
-  // buildArray();
+  buildArray();
 }
 
 let pixelBuffer;
@@ -547,15 +548,15 @@ function buildArray() {
 }
 
 function setup() {
-  createCanvas(2.5*arrWidth, arrHeight);
+  // createCanvas(2.5*arrWidth, arrHeight);
   loadGraphicsSetting(graphicsSetting);
   // generateColors();
   buildArray()
-  pixelBuffer = createImage(arrWidth, arrHeight);
-  pixelBuffer = createImage(arrWidth, arrHeight);
-  pixelBuffer.loadPixels();
+  // pixelBuffer = createImage(arrWidth, arrHeight);
+  // pixelBuffer = createImage(arrWidth, arrHeight);
+  // pixelBuffer.loadPixels();
 
-  background(220);
+  // background(220);
   // for (let i = 0; i < 50; i++) {
   //   arr2d[i][0].setID(1);
   // }
@@ -563,7 +564,7 @@ function setup() {
 
 function updateSand(xPos, yPos) {
   const center = arr2d[xPos][yPos];
-  if (center.getUpdated() == true || yPos == arrHeight - 1) {
+  if (center.hasUpdated == true || yPos == arrHeight - 1) {
     return;
   }
   const down = arr2d[xPos][yPos + 1];
@@ -572,11 +573,11 @@ function updateSand(xPos, yPos) {
 
 // Down, through empty space, fire, or smoke
   if (down.getID() <= 0) {
-    down.setID(-2);
+    // down.setID(-2);
     swap(center, down);
 
   // Down through water
-  } else if (down.getID() == 2 && !down.getUpdated()) {
+  } else if (down.getID() == 2 && !down.hasUpdated) {
     swap(center, down);
 
   // Down-Left
@@ -591,7 +592,7 @@ function updateSand(xPos, yPos) {
 
 function updateSandRight(xPos, yPos) {
   const center = arr2d[xPos][yPos];
-  if (center.getUpdated() || yPos == arrHeight - 1) {
+  if (center.hasUpdated || yPos == arrHeight - 1) {
     return;
   }
   const down = arr2d[xPos][yPos + 1];
@@ -600,11 +601,11 @@ function updateSandRight(xPos, yPos) {
 
 // Down, through empty space, fire, or smoke
   if (down.getID() <= 0) {
-    down.setID(-2);
+    // down.setID(-2);
     swap(center, down);
 
   // Down through water
-  } else if (down.getID() == 2 && !down.getUpdated()) {
+  } else if (down.getID() == 2 && !down.hasUpdated) {
     swap(center, down);
 
   // Down-Right
@@ -619,7 +620,7 @@ function updateSandRight(xPos, yPos) {
 
 function updateWater(xPos, yPos) {
   const center = arr2d[xPos][yPos];
-  if (center.getUpdated() == true) {
+  if (center.hasUpdated == true) {
     return;
   }
   
@@ -665,7 +666,7 @@ function updateWater(xPos, yPos) {
 
 function updateWaterRight(xPos, yPos) {
   const center = arr2d[xPos][yPos];
-  if (center.getUpdated() == true) {
+  if (center.hasUpdated == true) {
     return;
   }
 
@@ -716,7 +717,7 @@ function updateFire(xPos, yPos) {
   // const leftBoundary = (xPos != 0) * -1;
   // const rightBoundary = ()
 
-  if (particle.getUpdated() == true) {
+  if (particle.hasUpdated == true) {
     return;
   }
   
@@ -790,7 +791,7 @@ function updateFire(xPos, yPos) {
 function updateFireRight(xPos, yPos) {
   const particle = arr2d[xPos][yPos];
   
-  if (particle.getUpdated() == true) {
+  if (particle.hasUpdated == true) {
     return;
   }
   
@@ -865,7 +866,7 @@ function updateFireRight(xPos, yPos) {
 function updateSmoke(xPos, yPos) {
   const particle = arr2d[xPos][yPos];
 
-  if (particle.getUpdated() == true) {
+  if (particle.hasUpdated == true) {
     return;
   }
   
@@ -907,7 +908,7 @@ function updateSmoke(xPos, yPos) {
 function updateSmokeRight(xPos, yPos) {
   const particle = arr2d[xPos][yPos];
 
-  if (arr2d[xPos][yPos].getUpdated() == true) {
+  if (arr2d[xPos][yPos].hasUpdated == true) {
     return;
   }
   
@@ -953,15 +954,15 @@ function updateArr2d() {
   // console.log(particle);
   // console.log(functions[direction][particle.id+offset]);
 
-  for (let y = (arrHeight - 1); y >= 0; y--) {
+  for (let y = (arrHeight - 1); y >= 0; --y) {
     // print("y loop")
-    for (let x = 0; x < arrWidth; x++) {
+    for (let x = 0; x < arrWidth; ++x) {
       particle = arr2d[x][y];
       // if (arr2d[x][y].getID()) {
       //   print("sand")
       // }
       // print("x loop")
-      if (particle.getUpdated()) {
+      if (particle.hasUpdated) {
         continue;
       }
       // let currPixelID = particle.getID();
@@ -1016,12 +1017,12 @@ function updateArr2d() {
 function updateArr2dRight() {
   // print("Entered")
   let particle = arr2d[0][0];
-  for (let y = (arrHeight - 1); y >= 0; y--) {
+  for (let y = (arrHeight - 1); y >= 0; --y) {
     // print("y loop")
-    for (let x = arrWidth-1; x >= 0; x--) {
+    for (let x = arrWidth-1; x >= 0; --x) {
       particle = arr2d[x][y];
 
-      if (particle.getUpdated()) {
+      if (particle.hasUpdated) {
         continue;
       }
       // let currPixelID = arr2d[x][y].getID();
@@ -1083,251 +1084,192 @@ for(let i = 0; i < 3; i++) {
 // etc
 let flammabilityTime;
 
-function draw() {
-  background(220);
-  strokeWeight(5);
-  line(arrWidth + 3, 0, arrWidth + 3, arrHeight)
-  // if (mouseIsPressed) {
-  //   if (mouseX < arrWidth && mouseX > 0 &&
-  //       mouseY < arrHeight && mouseY > 0) {
-  //     for (let i = -brushSize; i < brushSize; i++) {
-  //       if (mouseY + i > arrHeight - 1 || mouseY + i < 0) {
-  //         continue;
-  //       }
-  //       for (let j = -brushSize; j < brushSize; j++) {
-  //         if (mouseX + j > arrWidth - 1 || mouseX + j < 0) {
-  //           continue;
-  //         }
-  //         if(drawingWith != 3 && drawingWith != 0) {
-  //           let randomSpread = randInt(0, 6);
-  //           if (randomSpread != 5) {
-  //             continue;
-  //           }
-  //         }
+// function draw() {
+//   background(220);
+//   strokeWeight(5);
+//   line(arrWidth + 3, 0, arrWidth + 3, arrHeight)
+//   // if (mouseIsPressed) {
+//   //   if (mouseX < arrWidth && mouseX > 0 &&
+//   //       mouseY < arrHeight && mouseY > 0) {
+//   //     for (let i = -brushSize; i < brushSize; i++) {
+//   //       if (mouseY + i > arrHeight - 1 || mouseY + i < 0) {
+//   //         continue;
+//   //       }
+//   //       for (let j = -brushSize; j < brushSize; j++) {
+//   //         if (mouseX + j > arrWidth - 1 || mouseX + j < 0) {
+//   //           continue;
+//   //         }
+//   //         if(drawingWith != 3 && drawingWith != 0) {
+//   //           let randomSpread = randInt(0, 6);
+//   //           if (randomSpread != 5) {
+//   //             continue;
+//   //           }
+//   //         }
           
-  //         if (arr2d[mouseX + j][mouseY + i].getID() == 0 ||
-  //            drawingWith == 0) {
-  //           arr2d[mouseX + j][mouseY+ i].setID(drawingWith);
-  //           arr2d[mouseX + j][mouseY + i].setUpdated(false);
-  //           if (drawingWith == -1) {
-  //             arr2d[mouseX + j][mouseY + i].setLifeTime(flameLife + randInt(-15, 0));
-  //           } else if (drawingWith == -2) {
-  //             arr2d[mouseX + j][mouseY + i].setLifeTime(smokeLife + randInt(-15, 0));
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+//   //         if (arr2d[mouseX + j][mouseY + i].getID() == 0 ||
+//   //            drawingWith == 0) {
+//   //           arr2d[mouseX + j][mouseY+ i].setID(drawingWith);
+//   //           arr2d[mouseX + j][mouseY + i].setUpdated(false);
+//   //           if (drawingWith == -1) {
+//   //             arr2d[mouseX + j][mouseY + i].setLifeTime(flameLife + randInt(-15, 0));
+//   //           } else if (drawingWith == -2) {
+//   //             arr2d[mouseX + j][mouseY + i].setLifeTime(smokeLife + randInt(-15, 0));
+//   //           }
+//   //         }
+//   //       }
+//   //     }
+//   //   }
+//   // }
   
 
-  // pixelBuffer.updatePixels();
-  // console.log(pixelBuffer)
+//   // pixelBuffer.updatePixels();
+//   // console.log(pixelBuffer)
 
-  noSmooth();
-  // image(pixelBuffer, 0, 0, arrWidth, arrHeight);
+//   noSmooth();
+//   // image(pixelBuffer, 0, 0, arrWidth, arrHeight);
 
   
-  textSize(UItextSize);
-  text("Framerate:" + round(frameRate()) + " fps", 1.1*arrWidth, arrHeight/10);
-  text("Particle #:" + numParticles, 1.1*arrWidth, arrHeight/5);
-  // textSize(14);
-  text("S: Sand", 1.1*arrWidth, height-7*UItextSize);
-  text("W: Water", 1.1*arrWidth, height-6*UItextSize);
-  text("F: Fire", 1.1*arrWidth, height-5*UItextSize);
-  text("M: Smoke", 1.1*arrWidth, height-4*UItextSize);
-  text("D: Wood", 1.1*arrWidth, height-3*UItextSize);
-  text("E: Erase", 1.1*arrWidth, height-2*UItextSize);
-  // textSize(11);
-  text("P: Increase Brush Size", 1.1*arrWidth, height-1*UItextSize);
-  text("L: Decrease Brush Size", 1.1*arrWidth, height-1);
-  // print(evenFrame);
-  evenFrame = !evenFrame;
+//   textSize(UItextSize);
+//   text("Framerate:" + round(frameRate()) + " fps", 1.1*arrWidth, arrHeight/10);
+//   text("Particle #:" + numParticles, 1.1*arrWidth, arrHeight/5);
+//   // textSize(14);
+//   text("S: Sand", 1.1*arrWidth, height-7*UItextSize);
+//   text("W: Water", 1.1*arrWidth, height-6*UItextSize);
+//   text("F: Fire", 1.1*arrWidth, height-5*UItextSize);
+//   text("M: Smoke", 1.1*arrWidth, height-4*UItextSize);
+//   text("D: Wood", 1.1*arrWidth, height-3*UItextSize);
+//   text("E: Erase", 1.1*arrWidth, height-2*UItextSize);
+//   // textSize(11);
+//   text("P: Increase Brush Size", 1.1*arrWidth, height-1*UItextSize);
+//   text("L: Decrease Brush Size", 1.1*arrWidth, height-1);
+//   // print(evenFrame);
   
-  textSize(UItextSize - 1);
-  text("Graphics\n Setting:", width*0.87, arrHeight*0.08);
-  textSize(UItextSize);
-  // push();
-  // Low button
-  fill(255)
-  strokeWeight(2)
-  if (graphicsSetting == 0) {
-    fill('cyan');
-  } else if (mouseX < (width) && mouseX > (width*0.87) ) {
-    if (mouseY < (arrHeight*0.40) && mouseY > (arrHeight*0.20)) {
-      fill('cyan');
-    }
-  }
-  rect(width*0.87, arrHeight*0.20, arrWidth*0.33, arrHeight*0.20);
-  // Medium button
-  fill(255)
-  if (graphicsSetting == 1) {
-    fill('cyan');
-  } else if (mouseX < (width) && mouseX > (width*0.87) ) {
-    if (mouseY < (arrHeight*0.60) && mouseY > (arrHeight*0.40)) {
-      fill('cyan');
-    }
-  }
-  rect(width*0.87, arrHeight*0.40, arrWidth*0.33, arrHeight*0.20);
-  // High button
-  fill(255)
-  if (graphicsSetting == 2) {
-    fill('cyan');
-  } else if (mouseX < (width) && mouseX > (width*0.87) ) {
-    if (mouseY < (arrHeight*0.80) && mouseY > (arrHeight*0.60)) {
-      fill('cyan');
-    }
-  }
-  rect(width*0.87, arrHeight*0.60, arrWidth*0.33, arrHeight*0.20);
-  // Ultra button
-  fill(255)
-  if (graphicsSetting == 3) {
-    fill('cyan');
-  } else if (mouseX < (width) && mouseX > (width*0.87) ) {
-    if (mouseY < (arrHeight) && mouseY > (arrHeight*0.80)) {
-      fill('cyan');
-    }
-  }
-  rect(width*0.87, arrHeight*0.80, arrWidth*0.33, arrHeight*0.20);
-  fill(0)
-  // pop();
   
-  text("Low", width*0.91, arrHeight*0.30);
-  text("Medium", width*0.885, arrHeight*0.50);
-  text("High", width*0.91, arrHeight*0.70);
-  text("Ultra", width*0.91, arrHeight*0.90);
-}
-
-function mouseClicked() {
-  if (mouseX < (width) && mouseX > (width*0.87) &&
-      mouseY < (arrHeight*0.40) && mouseY > (arrHeight*0.20) ) {
-    graphicsSetting = 0;
-    loadGraphicsSetting(graphicsSetting);
-    createCanvas(2.5*arrWidth, arrHeight);
-    loadGraphicsSetting(graphicsSetting);
-    buildArray();
-    pixelBuffer = createImage(arrWidth, arrHeight);
-
-    background(220);
-  }
-  else if (mouseX < (width) && mouseX > (width*0.87) &&
-      mouseY < (arrHeight*0.60) && mouseY > (arrHeight*0.40) ) {
-    graphicsSetting = 1;
-    loadGraphicsSetting(graphicsSetting);
-    createCanvas(2.5*arrWidth, arrHeight);
-    loadGraphicsSetting(graphicsSetting);
-    buildArray();
-    pixelBuffer = createImage(arrWidth, arrHeight);
-
-    background(220);
-  }
-  else if (mouseX < (width) && mouseX > (width*0.87) &&
-      mouseY < (arrHeight*0.80) && mouseY > (arrHeight*0.60) ) {
-    graphicsSetting = 2;
-    loadGraphicsSetting(graphicsSetting);
-    createCanvas(2.5*arrWidth, arrHeight);
-    loadGraphicsSetting(graphicsSetting);
-    buildArray();
-    pixelBuffer = createImage(arrWidth, arrHeight);
-
-    background(220);
-  }
-  else if (mouseX < (width) && mouseX > (width*0.87) &&
-      mouseY < (arrHeight) && mouseY > (arrHeight*0.80) ) {
-    graphicsSetting = 3;
-    loadGraphicsSetting(graphicsSetting);
-    createCanvas(2.5*arrWidth, arrHeight);
-    loadGraphicsSetting(graphicsSetting);
-    buildArray();
-    pixelBuffer = createImage(arrWidth, arrHeight);
-
-    background(220);
-  }
+//   textSize(UItextSize - 1);
+//   text("Graphics\n Setting:", width*0.87, arrHeight*0.08);
+//   textSize(UItextSize);
+//   // push();
+//   // Low button
+//   fill(255)
+//   strokeWeight(2)
+//   if (graphicsSetting == 0) {
+//     fill('cyan');
+//   } else if (mouseX < (width) && mouseX > (width*0.87) ) {
+//     if (mouseY < (arrHeight*0.40) && mouseY > (arrHeight*0.20)) {
+//       fill('cyan');
+//     }
+//   }
+//   rect(width*0.87, arrHeight*0.20, arrWidth*0.33, arrHeight*0.20);
+//   // Medium button
+//   fill(255)
+//   if (graphicsSetting == 1) {
+//     fill('cyan');
+//   } else if (mouseX < (width) && mouseX > (width*0.87) ) {
+//     if (mouseY < (arrHeight*0.60) && mouseY > (arrHeight*0.40)) {
+//       fill('cyan');
+//     }
+//   }
+//   rect(width*0.87, arrHeight*0.40, arrWidth*0.33, arrHeight*0.20);
+//   // High button
+//   fill(255)
+//   if (graphicsSetting == 2) {
+//     fill('cyan');
+//   } else if (mouseX < (width) && mouseX > (width*0.87) ) {
+//     if (mouseY < (arrHeight*0.80) && mouseY > (arrHeight*0.60)) {
+//       fill('cyan');
+//     }
+//   }
+//   rect(width*0.87, arrHeight*0.60, arrWidth*0.33, arrHeight*0.20);
+//   // Ultra button
+//   fill(255)
+//   if (graphicsSetting == 3) {
+//     fill('cyan');
+//   } else if (mouseX < (width) && mouseX > (width*0.87) ) {
+//     if (mouseY < (arrHeight) && mouseY > (arrHeight*0.80)) {
+//       fill('cyan');
+//     }
+//   }
+//   rect(width*0.87, arrHeight*0.80, arrWidth*0.33, arrHeight*0.20);
+//   fill(0)
+//   // pop();
   
-  // resize(500, 500);
-}
-
-function keyTyped() {
-  if (key === 'w') {
-    drawingWith = 2;
-  } else if (key === 's') {
-    drawingWith = 1;
-  } else if (key === 'd') {
-    drawingWith = 3;
-  } else if (key === 'm') {
-    drawingWith = -2;
-  } else if (key === 'f') {
-    drawingWith = -1;
-  } else if (key === 'p') {
-    if (brushSize < Math.min(arrWidth, arrHeight)) {
-      brushSize++;
-    }
-  } else if (key === 'l') {
-    if (brushSize > 1) {
-      brushSize--;
-    }
-  } else if (key === 'e') {
-    drawingWith = 0;
-  }
-}
-
-var drawing = false;
-window.updateRotateAndZoom = function() {
-
-
-//   function getMousePos(evt) {
-//     var rect = onscreenCanvas.getBoundingClientRect();
-//     return {
-//         x: (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
-//         y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
-//     };
+//   text("Low", width*0.91, arrHeight*0.30);
+//   text("Medium", width*0.885, arrHeight*0.50);
+//   text("High", width*0.91, arrHeight*0.70);
+//   text("Ultra", width*0.91, arrHeight*0.90);
 // }
 
-  // let canvas = document.getElementById("glcanvas");
+// function mouseClicked() {
+//   if (mouseX < (width) && mouseX > (width*0.87) &&
+//       mouseY < (arrHeight*0.40) && mouseY > (arrHeight*0.20) ) {
+//     graphicsSetting = 0;
+//     loadGraphicsSetting(graphicsSetting);
+//     createCanvas(2.5*arrWidth, arrHeight);
+//     loadGraphicsSetting(graphicsSetting);
+//     buildArray();
+//     pixelBuffer = createImage(arrWidth, arrHeight);
 
-  // window.width = onscreenCanvas.clientWidth;
-  // window.height = onscreenCanvas.clientHeight;
-  // let moved = false;
-  drawing = false;
-  let mouseDownListener = (e) => {
-      // moved = true;
-      // const rect = onscreenCanvas.getBoundingClientRect();
-      // const x = (e.clientX - rect.left) / (rect.right - rect.left) * onscreenCanvas.width;
-      // const y = (e.clientY - rect.top) / (rect.bottom - rect.top) * onscreenCanvas.height;
+//     background(220);
+//   }
+//   else if (mouseX < (width) && mouseX > (width*0.87) &&
+//       mouseY < (arrHeight*0.60) && mouseY > (arrHeight*0.40) ) {
+//     graphicsSetting = 1;
+//     loadGraphicsSetting(graphicsSetting);
+//     createCanvas(2.5*arrWidth, arrHeight);
+//     loadGraphicsSetting(graphicsSetting);
+//     buildArray();
+//     pixelBuffer = createImage(arrWidth, arrHeight);
 
-      drawing = true;
-      mx = e.clientX;
-      my = e.clientY;
-  }
-  onscreenCanvas.addEventListener("mousedown", mouseDownListener);
-  let mouseMoveListener = (e) => {
-      if(drawing) {
-        // const rect = onscreenCanvas.getBoundingClientRect();
-        mx = e.clientX;
-        my = e.clientY;
-        // mx = (e.clientX - rect.left) / (rect.right - rect.left) * onscreenCanvas.width;
-        // mx = map(0, )
-        // my = (e.clientY - rect.top) / (rect.bottom - rect.top) * onscreenCanvas.height;
-          // currRotate += 360 * e.movementX/onscreenCanvas.clientWidth;
-          // // Bind rotation to 0-360
-          // // Supports rotating infinitely in any direction,
-          // // as the degrees get reset when reaching 360 or 0
-          // if (currRotate > 360) {
-          //     currRotate = 0;
-          // } else if (currRotate < 0) {
-          //     currRotate = 360;
-          // }
+//     background(220);
+//   }
+//   else if (mouseX < (width) && mouseX > (width*0.87) &&
+//       mouseY < (arrHeight*0.80) && mouseY > (arrHeight*0.60) ) {
+//     graphicsSetting = 2;
+//     loadGraphicsSetting(graphicsSetting);
+//     createCanvas(2.5*arrWidth, arrHeight);
+//     loadGraphicsSetting(graphicsSetting);
+//     buildArray();
+//     pixelBuffer = createImage(arrWidth, arrHeight);
 
-          // currZoom += -200 * e.movementY/onscreenCanvas.clientHeight;
-          // // bind zoom from 1 to 100
-          // currZoom = Math.max(1, currZoom);
-          // currZoom = Math.min(100, currZoom);
-      }
-  }
-  onscreenCanvas.addEventListener("mousemove", mouseMoveListener);
+//     background(220);
+//   }
+//   else if (mouseX < (width) && mouseX > (width*0.87) &&
+//       mouseY < (arrHeight) && mouseY > (arrHeight*0.80) ) {
+//     graphicsSetting = 3;
+//     loadGraphicsSetting(graphicsSetting);
+//     createCanvas(2.5*arrWidth, arrHeight);
+//     loadGraphicsSetting(graphicsSetting);
+//     buildArray();
+//     pixelBuffer = createImage(arrWidth, arrHeight);
+
+//     background(220);
+//   }
   
-  let mouseUpListener = (e) => {
-      drawing = false;
-  }
-  onscreenCanvas.addEventListener("mouseup", mouseUpListener);
-}
+//   // resize(500, 500);
+// }
+
+// function keyTyped() {
+//   if (key === 'w') {
+//     drawingWith = 2;
+//   } else if (key === 's') {
+//     drawingWith = 1;
+//   } else if (key === 'd') {
+//     drawingWith = 3;
+//   } else if (key === 'm') {
+//     drawingWith = -2;
+//   } else if (key === 'f') {
+//     drawingWith = -1;
+//   } else if (key === 'p') {
+//     if (brushSize < Math.min(arrWidth, arrHeight)) {
+//       brushSize++;
+//     }
+//   } else if (key === 'l') {
+//     if (brushSize > 1) {
+//       brushSize--;
+//     }
+//   } else if (key === 'e') {
+//     drawingWith = 0;
+//   }
+// }
+
+var drawing = false;
