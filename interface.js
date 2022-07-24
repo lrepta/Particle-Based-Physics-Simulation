@@ -63,3 +63,26 @@ window.updateMouseDrawing = function() {
     }
     onscreenCanvas.addEventListener("mouseup", mouseUpListener);
   }
+
+
+function generateElementButtons() {
+  const elementTable = document.getElementById("elementTable");
+
+  let elems = ["Smoke", "Fire", "Erase", "Sand", "Water", "Wood"];
+
+  const row = elementTable.insertRow(0);
+  for (let i = 0; i < 6; ++i) {
+    const cell = row.insertCell(i);
+
+    const elemButton = document.createElement("input")
+    cell.appendChild(elemButton);
+    elemButton.type = "button";
+    elemButton.className = "elementMenuButton";
+
+    elemButton.value = elems[i];
+
+    elemButton.addEventListener("click", ()=>{drawingWith = i-2; console.log(drawingWith)});
+  }
+}
+
+generateElementButtons();

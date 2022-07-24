@@ -1,4 +1,5 @@
 const size = 400;
+let lastIndex = 159999;
 
 /* Scaling due to device pixel ratio */
 const onscreenPixelRatio = window.devicePixelRatio;
@@ -22,6 +23,14 @@ gameCanvas.width = size;
 gameCanvas.height = size;
 const gameCtx = gameCanvas.getContext("2d");
 const gameImagedata = gameCtx.createImageData(size, size);
+
+const pixelData = new ArrayBuffer(4*size*size); // 32 bit for each particle
+// bits 0-9 are lifetime
+// bit 10 is hasUpdated
+// bits 11-15 are id
+// bits 16-31 unused for now
+const pixelView = new Uint32Array(pixelData);
+// alert(gameImagedata.)
 const gameImagedata32 = new Uint32Array(gameImagedata.data.buffer);
 
 function init() {
@@ -113,19 +122,36 @@ function mainLoop(now) {
             }
           }
 
+          const index = mx+j + ((my+i)*arrHeight);
+
           // INEFFICIENT, REWRITE
           if (drawingWith == 0) {
-            arr2d[mx + j][my+ i].setEmpty();
-          } else if (arr2d[mx + j][my + i].getID() == 0 || drawingWith == 0) {
-            arr2d[mx + j][my+ i].setID(drawingWith);
             // arr2d[mx + j][my+ i].setEmpty();
-            arr2d[mx + j][my + i].setUpdated(false);
+            setEmpty(index);
+
+          } else if (getID(index) == 0 || drawingWith == 0) {
+            
+            // arr2d[mx + j][my+ i].setID(drawingWith, index);
+            setID(drawingWith, index);
+            setUpdated(false, index);
+            // arr2d[mx + j][my + i].setUpdated(false);
             if (drawingWith == -1) {
-              arr2d[mx + j][my + i].setLifeTime(flameLife + randInt(-15, 0));
+              setLifeTime(flameLife + randInt(-15, 0), index);
             } else if (drawingWith == -2) {
-              arr2d[mx + j][my + i].setLifeTime(smokeLife + randInt(-15, 0));
+              setLifeTime(smokeLife + randInt(-15, 0), index);
             }
           }
+          
+          // else if (arr2d[mx + j][my + i].getID() == 0 || drawingWith == 0) {
+          //   arr2d[mx + j][my+ i].setID(drawingWith);
+          //   // arr2d[mx + j][my+ i].setEmpty();
+          //   arr2d[mx + j][my + i].setUpdated(false);
+          //   if (drawingWith == -1) {
+          //     arr2d[mx + j][my + i].setLifeTime(flameLife + randInt(-15, 0));
+          //   } else if (drawingWith == -2) {
+          //     arr2d[mx + j][my + i].setLifeTime(smokeLife + randInt(-15, 0));
+          //   }
+          // }
           
           
         }
@@ -168,13 +194,13 @@ function mainLoop(now) {
   // let numParticles = 0;
   for (var y = 0; y < arrHeight; ++y) {
       for (var x = 0; x < arrWidth; ++x) {
-        var c;
+        // var c;
         
         // const particle = arr2d[x][y];
         // const particleId = particle.getID();
         // gameImagedata32[x + size*y] = BACKGROUND;
         // // ++numParticles;
-        gameImagedata32[x + size*y] = arr2d[x][y].col;
+///////        gameImagedata32[x + size*y] = arr2d[x][y].col;
         // switch(particleId) {
         //   case 1: // Sand
         //   //  c = particle.color;
@@ -243,7 +269,8 @@ function mainLoop(now) {
         //     break;
         // }
 
-        arr2d[x][y].setUpdated(false);
+        // arr2d[x][y].setUpdated(false);
+        setUpdated(false, x + size*y);
       }
   }
 
@@ -386,6 +413,67 @@ function generateColors() {
   }
 }
 
+function getUpdated(index) { 
+  // get the hasUpdated bit, then right shift it over 21 to get 0 or 1
+  return (pixelView[index] & 0x00200000) // >> 21);
+}
+function setUpdated(status, index) {
+  // zero out the 5 id bits, then replace them with the 1 21-left-shifted status bit
+  pixelView[index] &= 0xFFEFFFFF; // 0b11111111111011111111111111111111
+  pixelView[index] |= (status << 21);
+}
+
+function getID(index) {
+  // get the 5 id bits, then right shift them over 16 to get the correct value
+  return ((pixelView[index] & 0x001F0000) >> 16); 
+}
+
+function setID(newId, index) {
+  // zero out the 5 id bits, then replace them with the 5 16-left-shifted newId bits
+  pixelView[index] &= 0xFFE0FFFF; // 0b11111111111000001111111111111111
+  pixelView[index] |= (newId << 16);
+  // set the color of the corresponding newId
+  gameImagedata32[index] = getColor(newId);
+}
+
+function getLifeTime(index) {
+  return (pixelView[index] >> 22);
+}
+
+function setLifeTime(time, index) {
+  pixelView[index] &= 0x003FFFFF;
+  pixelView[index] |= (time << 22);
+}
+
+function incrementTime(index) {
+  const lifeTime = (pixelView[index] >> 22) - 1;
+  pixelView[index] &= 0x003FFFFF;
+  pixelView[index] |= (lifeTime << 22);
+}
+
+function setEmpty(index) {
+  pixelView[index] &= 0x00000000;
+  gameImagedata32[index] = BACKGROUND;
+}
+
+function swap(index1, index2) {
+  // console.log(index1);
+  // pixelView[index2] = pixelView[index1];
+  gameImagedata32[index2] = gameImagedata32[index1];
+
+  // pixelView[index1] = pixelView[index1] ^ pixelView[index2];
+  // pixelView[index2] = pixelView[index1] ^ pixelView[index2];
+  // pixelView[index1] = pixelView[index1] ^ pixelView[index2];
+
+  // gameImagedata32[index1] = gameImagedata32[index1] ^ gameImagedata32[index2];
+  // gameImagedata32[index2] = gameImagedata32[index1] ^ gameImagedata32[index2];
+  // gameImagedata32[index1] = gameImagedata32[index1] ^ gameImagedata32[index2];
+  // [pixelView[index1], pixelView[index2]] = [pixelView[index2], pixelView[index1]];
+  // [gameImagedata32[index1], gameImagedata32[index2]] = [gameImagedata32[index2], gameImagedata32[index1]];
+  setUpdated(true, index1);
+  setUpdated(true, index2);
+}
+
 // Particle types are:
 //  -2 -> Smoke
 //  -1 -> Fire
@@ -406,6 +494,8 @@ class Pixel {
     if (inputId != 0) {
       this.col = getColor(inputId);
     }
+
+    // pixelView[]
     
   }
   
@@ -474,15 +564,15 @@ class Pixel {
   }
 }
 
-function swap(first, second) {
-  [first.id, second.id] = [second.id, first.id];
-  // [first.color, second.color] = [second.color, first.color];
-  [first.lifeTime, second.lifeTime] = [second.lifeTime, first.lifeTime];
-  first.hasUpdated = second.hasUpdated = true;
-  first.col = first.col ^ second.col;
-  second.col = first.col ^ second.col;
-  first.col = first.col ^ second.col;
-}
+// function swap(first, second) {
+//   [first.id, second.id] = [second.id, first.id];
+//   // [first.color, second.color] = [second.color, first.color];
+//   [first.lifeTime, second.lifeTime] = [second.lifeTime, first.lifeTime];
+//   first.hasUpdated = second.hasUpdated = true;
+//   first.col = first.col ^ second.col;
+//   second.col = first.col ^ second.col;
+//   first.col = first.col ^ second.col;
+// }
 
 
 let arr2d;
@@ -563,58 +653,118 @@ function setup() {
 }
 
 function updateSand(xPos, yPos) {
-  const center = arr2d[xPos][yPos];
-  if (center.hasUpdated == true || yPos == arrHeight - 1) {
+  // const center = arr2d[xPos][yPos];
+  const index = xPos + yPos*arrHeight;
+  // console.log("bye");
+
+  if (getUpdated(index) || yPos == arrHeight - 1) {
+    // console.log("bye");
     return;
   }
-  const down = arr2d[xPos][yPos + 1];
-  const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
-  const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
+  // const down = arr2d[xPos][yPos + 1];
+  
+
+  const downIndex = index + arrHeight;
+  // const downLeftIndex = (downIndex-1)
 
 // Down, through empty space, fire, or smoke
-  if (down.getID() <= 0) {
+  if (getID(downIndex) <= 0) {
     // down.setID(-2);
-    swap(center, down);
+    // console.log("Hi")
+    swap(index, downIndex);
+    return;
+  }
 
   // Down through water
-  } else if (down.getID() == 2 && !down.hasUpdated) {
-    swap(center, down);
+  if (getID(downIndex) == 2 && !getUpdated(downIndex)) {
+    swap(index, downIndex);
+    return;
+  }
+
+  // const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
+  // const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
+
+  // const downLeftIndex = downIndex-1 * (xPos > 0);
 
   // Down-Left
-  } else if (downLeft && downLeft.getID() == 0) {
-    swap(center, downLeft);
+  if (xPos > 0 && getID(downIndex-1) == 0) {
+    swap(index, downIndex-1);
+    return;
+  }
 
   // Down-Right
-  } else if (downRight && downRight.getID() == 0) {
-    swap(center, downRight);
+  if (xPos < arrHeight-1 && getID(downIndex+1) == 0) {
+    swap(index, downIndex+1);
+    return;
   }
 }
 
 function updateSandRight(xPos, yPos) {
-  const center = arr2d[xPos][yPos];
-  if (center.hasUpdated || yPos == arrHeight - 1) {
+//   const center = arr2d[xPos][yPos];
+//   if (center.hasUpdated || yPos == arrHeight - 1) {
+//     return;
+//   }
+//   const down = arr2d[xPos][yPos + 1];
+//   const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
+//   const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
+
+// // Down, through empty space, fire, or smoke
+//   if (down.getID() <= 0) {
+//     // down.setID(-2);
+//     swap(center, down);
+
+//   // Down through water
+//   } else if (down.getID() == 2 && !down.hasUpdated) {
+//     swap(center, down);
+
+//   // Down-Right
+//   } else if (downRight && downRight.getID() == 0) {
+//     swap(center, downRight);
+
+//   // Down-Left
+//   } else if (downLeft && downLeft.getID() == 0) {
+//     swap(center, downLeft);
+//   }
+
+const index = xPos + yPos*arrHeight;
+
+  if (getUpdated(index) || yPos == arrHeight - 1) {
     return;
   }
-  const down = arr2d[xPos][yPos + 1];
-  const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
-  const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
+  // const down = arr2d[xPos][yPos + 1];
+  
+
+  const downIndex = index + arrHeight;
+  // const downLeftIndex = (downIndex-1)
 
 // Down, through empty space, fire, or smoke
-  if (down.getID() <= 0) {
+  if (getID(downIndex) <= 0) {
     // down.setID(-2);
-    swap(center, down);
+    swap(index, downIndex);
+    return;
+  }
 
   // Down through water
-  } else if (down.getID() == 2 && !down.hasUpdated) {
-    swap(center, down);
+  if (getID(downIndex) == 2 && !getUpdated(downIndex)) {
+    swap(index, downIndex);
+    return;
+  }
+
+  // const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
+  // const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
+
+  // const downLeftIndex = downIndex-1 * (xPos > 0);
 
   // Down-Right
-  } else if (downRight && downRight.getID() == 0) {
-    swap(center, downRight);
+  if (xPos < arrHeight-1 && getID(downIndex+1) == 0) {
+    swap(index, downIndex+1);
+    return;
+  }
 
   // Down-Left
-  } else if (downLeft && downLeft.getID() == 0) {
-    swap(center, downLeft);
+  if (xPos > 0 && getID(downIndex-1) == 0) {
+    swap(index, downIndex-1);
+    return;
   }
 }
 
@@ -951,24 +1101,25 @@ function updateArr2d() {
   // print("Entered")
   
   let particle = arr2d[0][0];
+  let index = 0;
   // console.log(particle);
   // console.log(functions[direction][particle.id+offset]);
+
+  // for (let i = 0; i < )
 
   for (let y = (arrHeight - 1); y >= 0; --y) {
     // print("y loop")
     for (let x = 0; x < arrWidth; ++x) {
-      particle = arr2d[x][y];
-      // if (arr2d[x][y].getID()) {
-      //   print("sand")
+      // particle = arr2d[x][y];
+      index = x + arrHeight*y;
+
+      // if (getUpdated(index)) {
+      //   continue;
       // }
-      // print("x loop")
-      if (particle.hasUpdated) {
-        continue;
-      }
       // let currPixelID = particle.getID();
       // print("CurrPixelID is")
       
-      functions[direction][particle.id+offset](x,y);
+      functions[direction][getID(index)+offset](x,y);
       // console.log(functions[direction]);
       // console.log(functions[direction][particle.id+offset]);
       // if (direction) {
@@ -1016,18 +1167,19 @@ function updateArr2d() {
 
 function updateArr2dRight() {
   // print("Entered")
-  let particle = arr2d[0][0];
+  // let particle = arr2d[0][0];
+  let index = 0;
   for (let y = (arrHeight - 1); y >= 0; --y) {
     // print("y loop")
     for (let x = arrWidth-1; x >= 0; --x) {
-      particle = arr2d[x][y];
 
-      if (particle.hasUpdated) {
+      if (getUpdated(index)) {
         continue;
       }
-      // let currPixelID = arr2d[x][y].getID();
-
-      functions[direction][particle.id+offset](x,y);
+      // let currPixelID = particle.getID();
+      // print("CurrPixelID is")
+      
+      functions[direction][getID(index)+offset](x,y);
       
       // if (direction) {
       //   switch(currPixelID) {
