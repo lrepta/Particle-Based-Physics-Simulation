@@ -98,7 +98,22 @@ var my = 0;
 
 var numParticles = 0;
 
+let start = performance.now();
+let end = performance.now();
+let drawCalls = 0;
+const fpsCounter = document.getElementById("fpsCounter");
+function calcFps() {
+  end = performance.now();
+  const fps = Math.floor((1000 * drawCalls) / (end-start));
+  start = end;
+  drawCalls = 0;
+  fpsCounter.innerHTML = fps + " FPS";
+}
+
+window.setInterval(calcFps, 500);
+
 function mainLoop(now) {
+  ++drawCalls;
   window.requestAnimationFrame(mainLoop);
   numParticles = 0;
 
@@ -379,6 +394,16 @@ function setNotUpdated(index) {
   pixelView[index] &= 0xFFDFFFFF;
 }
 
+// Two's-complement representation of -1 using 5 bits
+const _FIRE = 0x001F0000; // = 31 or -1
+const _SMOKE = 0x001E0000; // = 30 or -2
+const _BACKGROUND = 0x00000000; // = 0
+const _SAND = 0x00010000; // ? = 1
+const _WATER = 0x00020000; // ? = 2
+const _WOOD = 0x00030000; // ? = 3
+
+// const _PID = 
+
 function getID(index) {
   // get the 5 id bits, then right shift them over 16 to get the correct value
   return ((pixelView[index] & 0x001F0000) >> 16); 
@@ -388,6 +413,7 @@ function setID(newId, index) {
   // zero out the 5 id bits, then replace them with the 5 16-left-shifted newId bits
   pixelView[index] &= 0x00000000; //0xFFE0FFFF // 0b11111111111000001111111111111111
   pixelView[index] |= (newId << 16);
+  // pixelView[index] |= newId;
   // set the color of the corresponding newId
   gameImagedata32[index] = getColor(newId);
 }
@@ -432,8 +458,8 @@ function swap(index1, index2) {
   // console.log("second: " + pixelView[index2]);
   // console.log();
   // console.log(getUpdated(index1));
-  setUpdated(true, index1);
-  setUpdated(true, index2);
+  setUpdated(index1);
+  setUpdated(index2);
   // console.log(getUpdated(index1));
 }
 
