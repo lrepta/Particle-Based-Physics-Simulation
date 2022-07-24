@@ -50,8 +50,13 @@ function init() {
   /* Initialize imagedata */
   const len = gameImagedata32.length;
   for (var i = 0; i < len; ++i) {
-    gameImagedata32[i] = 0;
+    gameImagedata32[i] = BACKGROUND;
+    
     // saveGameImagedata32[i] = 0;
+  }
+
+  for (var i = 0; i < pixelView.length; ++i) {
+    pixelView[i] = 0;
   }
 
   /* Nice crisp pixels, regardless of pixel ratio */
@@ -133,7 +138,7 @@ function mainLoop(now) {
             
             // arr2d[mx + j][my+ i].setID(drawingWith, index);
             setID(drawingWith, index);
-            setUpdated(false, index);
+            setNotUpdated(index);
             // arr2d[mx + j][my + i].setUpdated(false);
             if (drawingWith == -1) {
               setLifeTime(flameLife + randInt(-15, 0), index);
@@ -200,77 +205,18 @@ function mainLoop(now) {
         // const particleId = particle.getID();
         // gameImagedata32[x + size*y] = BACKGROUND;
         // // ++numParticles;
-///////        gameImagedata32[x + size*y] = arr2d[x][y].col;
-        // switch(particleId) {
-        //   case 1: // Sand
-        //   //  c = particle.color;
-        //     // pixelBuffer.pixels[x + 200*y] = particle.col & 0x000000ff;
-        //     // pixelBuffer.pixels[2*(x + 200*y)] = particle.col & 0x000000ff;
-        //     // pixelBuffer.pixels[3*(x + 200*y)] = particle.col & 0x000000ff;
-        //     // pixelBuffer.pixels[4*(x + 200*y)] = particle.col & 0x000000ff;
-        //     // pixelBuffer.pixels[x + 200*y + 1] = (particle.col & 0x0000ff00) >>> 8;
-        //     // pixelBuffer.pixels[x + 200*y + 2] = (particle.col & 0x00ff0000) >>> 16;
-        //     // pixelBuffer.pixels[x + 200*y + 3] = 0xff;
-        //     numParticles++;
-        //     gameImagedata32[x + size*y] = particle.col;
-        //     break;
-        //   case 2: // Water
-        //     // c = color(20, 20, 150);
-        //   //  c = particle.color;
-
-
-        //     // pixelBuffer.pixels[x + 200*y] = particle.col;
-        //     numParticles++;
-        //     gameImagedata32[x + size*y] = particle.col;
-        //     break;
-        //   case 3: // Wood
-        //     // c = color(70, 35, 0);
-        //   //  c = particle.color;
-
-
-        //     // pixelBuffer.pixels[x + 200*y] = particle.col;
-        //     numParticles++;
-        //     gameImagedata32[x + size*y] = particle.col;
-        //     break;
-        //   case -1: // Fire
-        //     // lifeLeft = particle.getLifeTime();
-        //     // lifeLeft = lifeLeft/2;
-        //     // c = particle.color;
-        //     // c.setRed(254+lifeLeft);
-        //     // c.setGreen(110+lifeLeft);
-        //     particle.updateColor();
-        //   //  c = particle.color;
-        //     // Fire particles get more red as they cool
-        //     // (yellow -> orange -> red as life left decreases)
-        //     // c = color(254+lifeLeft, 110+lifeLeft, 0);
-
-
-        //     // pixelBuffer.pixels[x + 200*y] = particle.col;
-        //     numParticles++;
-        //     gameImagedata32[x + size*y] = particle.col;
-        //     break;
-        //   case -2: // Smoke
-        //     particle.updateColor();
-        //   //  c = particle.color;
-        //     // lifeLeft = -particle.getLifeTime();
-        //     // lifeLeft = lifeLeft/2;
-        //     // c = particle.color;
-        //     // c.setRed(120+lifeLeft);
-        //     // c.setGreen(120+lifeLeft);
-        //     // c.setBlue(120+lifeLeft);
-        //     // Smoke gets lighter the closer it is to dissipating
-        //     // (lifeLeft is negative)
-        //     // c = color(120+lifeLeft, 120+lifeLeft, 120+lifeLeft);
-
-
-        //     // pixelBuffer.pixels[4*(x + 200*y)] = particle.col;
-        //     numParticles++;
-        //     gameImagedata32[x + size*y] = particle.col;
-        //     break;
-        // }
+// gameImagedata32[x + size*y] = arr2d[x][y].col;
 
         // arr2d[x][y].setUpdated(false);
-        setUpdated(false, x + size*y);
+        // if (getID(x+size*y) != 0 && evenFrame) {
+        //   // console.log(getUpdated(x+size*y));
+        //   console.log(pixelView[x + size*y]);
+        //   setUpdated(false, x + size*y);
+        //   console.log(pixelView[x+size*y])
+        //   console.log();
+        //   // console.log(getUpdated(x+size*y));
+        // }
+        setNotUpdated(x + size*y);
       }
   }
 
@@ -285,6 +231,7 @@ function mainLoop(now) {
 
   drawCanvas();
   evenFrame = !evenFrame;
+  // console.log(evenFrame);
 }
 
 var __next_elem_idx = 0;
@@ -415,12 +362,21 @@ function generateColors() {
 
 function getUpdated(index) { 
   // get the hasUpdated bit, then right shift it over 21 to get 0 or 1
-  return (pixelView[index] & 0x00200000) // >> 21);
+  // let updated = pixelView[index];
+  return ((pixelView[index] & 0x00200000) >>> 21);
+  // return 0;
 }
-function setUpdated(status, index) {
-  // zero out the 5 id bits, then replace them with the 1 21-left-shifted status bit
-  pixelView[index] &= 0xFFEFFFFF; // 0b11111111111011111111111111111111
-  pixelView[index] |= (status << 21);
+// function setUpdated(status, index) {
+//   // zero out the 5 id bits, then replace them with the 1 21-left-shifted status bit
+//   pixelView[index] &= 0xFFDFFFFF; //FFEFFFFF; // 0b11111111111011111111111111111111
+//   pixelView[index] |= (status << 21);
+// }
+
+function setUpdated(index) {
+  pixelView[index] |= 0x00200000;
+}
+function setNotUpdated(index) {
+  pixelView[index] &= 0xFFDFFFFF;
 }
 
 function getID(index) {
@@ -430,7 +386,7 @@ function getID(index) {
 
 function setID(newId, index) {
   // zero out the 5 id bits, then replace them with the 5 16-left-shifted newId bits
-  pixelView[index] &= 0xFFE0FFFF; // 0b11111111111000001111111111111111
+  pixelView[index] &= 0x00000000; //0xFFE0FFFF // 0b11111111111000001111111111111111
   pixelView[index] |= (newId << 16);
   // set the color of the corresponding newId
   gameImagedata32[index] = getColor(newId);
@@ -458,20 +414,27 @@ function setEmpty(index) {
 
 function swap(index1, index2) {
   // console.log(index1);
+  // console.log("first: " + pixelView[index1]);
+  // console.log("second: " + pixelView[index2]);
   // pixelView[index2] = pixelView[index1];
-  gameImagedata32[index2] = gameImagedata32[index1];
+  // gameImagedata32[index2] = gameImagedata32[index1];
 
-  // pixelView[index1] = pixelView[index1] ^ pixelView[index2];
-  // pixelView[index2] = pixelView[index1] ^ pixelView[index2];
-  // pixelView[index1] = pixelView[index1] ^ pixelView[index2];
+  pixelView[index1] = pixelView[index1] ^ pixelView[index2];
+  pixelView[index2] = pixelView[index1] ^ pixelView[index2];
+  pixelView[index1] = pixelView[index1] ^ pixelView[index2];
 
-  // gameImagedata32[index1] = gameImagedata32[index1] ^ gameImagedata32[index2];
-  // gameImagedata32[index2] = gameImagedata32[index1] ^ gameImagedata32[index2];
-  // gameImagedata32[index1] = gameImagedata32[index1] ^ gameImagedata32[index2];
+  gameImagedata32[index1] = gameImagedata32[index1] ^ gameImagedata32[index2];
+  gameImagedata32[index2] = gameImagedata32[index1] ^ gameImagedata32[index2];
+  gameImagedata32[index1] = gameImagedata32[index1] ^ gameImagedata32[index2];
   // [pixelView[index1], pixelView[index2]] = [pixelView[index2], pixelView[index1]];
   // [gameImagedata32[index1], gameImagedata32[index2]] = [gameImagedata32[index2], gameImagedata32[index1]];
+  // console.log("first: " + pixelView[index1]);
+  // console.log("second: " + pixelView[index2]);
+  // console.log();
+  // console.log(getUpdated(index1));
   setUpdated(true, index1);
   setUpdated(true, index2);
+  // console.log(getUpdated(index1));
 }
 
 // Particle types are:
@@ -1098,124 +1061,34 @@ function updateSmokeRight(xPos, yPos) {
 }
 
 function updateArr2d() {
-  // print("Entered")
-  
-  let particle = arr2d[0][0];
   let index = 0;
-  // console.log(particle);
-  // console.log(functions[direction][particle.id+offset]);
-
-  // for (let i = 0; i < )
 
   for (let y = (arrHeight - 1); y >= 0; --y) {
-    // print("y loop")
     for (let x = 0; x < arrWidth; ++x) {
       // particle = arr2d[x][y];
       index = x + arrHeight*y;
 
-      // if (getUpdated(index)) {
-      //   continue;
-      // }
-      // let currPixelID = particle.getID();
-      // print("CurrPixelID is")
+      if (getUpdated(index)) {
+        continue;
+      }
       
       functions[direction][getID(index)+offset](x,y);
-      // console.log(functions[direction]);
-      // console.log(functions[direction][particle.id+offset]);
-      // if (direction) {
-      //   switch(currPixelID) {
-      //     case -2:
-      //       updateSmoke(x, y);
-      //       break;
-      //     case -1:
-      //       updateFire(x, y);
-      //       break;
-      //     case 1:
-      //       updateSand(x, y);
-      //       break;
-      //     case 2:
-      //       updateWater(x, y);
-      //       break;
-      //     case 0:
-      //       break;
-      //       // Do nothing for empty space;
-      //   }
-      // } else {
-      //   switch(currPixelID) {
-      //     case -2:
-      //       updateSmokeRight(x, y);
-      //       break;
-      //     case -1:
-      //       updateFireRight(x, y);
-      //       break;
-      //     case 1:
-      //       updateSandRight(x, y);
-      //       break;
-      //     case 2:
-      //       updateWaterRight(x, y);
-      //       break;
-      //     case 0:
-      //       break;
-      //       // Do nothing for empty space;
-      //   }
-      // }
       
     }
   }
-  // makePixelBuffer();
 }
 
 function updateArr2dRight() {
-  // print("Entered")
-  // let particle = arr2d[0][0];
   let index = 0;
   for (let y = (arrHeight - 1); y >= 0; --y) {
-    // print("y loop")
     for (let x = arrWidth-1; x >= 0; --x) {
+      index = x + arrHeight*y;
 
       if (getUpdated(index)) {
         continue;
       }
-      // let currPixelID = particle.getID();
-      // print("CurrPixelID is")
       
       functions[direction][getID(index)+offset](x,y);
-      
-      // if (direction) {
-      //   switch(currPixelID) {
-      //     case -2:
-      //       updateSmoke(x, y);
-      //       break;
-      //     case -1:
-      //       updateFire(x, y);
-      //       break;
-      //     case 1:
-      //       updateSand(x, y);
-      //       break;
-      //     case 2:
-      //       updateWater(x, y);
-      //       break;
-      //     case 0:
-      //       break;
-      //   }
-      // } else {
-      //   switch(currPixelID) {
-      //     case -2:
-      //       updateSmokeRight(x, y);
-      //       break;
-      //     case -1:
-      //       updateFireRight(x, y);
-      //       break;
-      //     case 1:
-      //       updateSandRight(x, y);
-      //       break;
-      //     case 2:
-      //       updateWaterRight(x, y);
-      //       break;
-      //     case 0:
-      //       break;
-      //   }
-      // }
       
     }
   }
