@@ -1,4 +1,4 @@
-const size = 400;
+const size = 500;
 let lastIndex = 159999;
 
 /* Scaling due to device pixel ratio */
@@ -378,7 +378,7 @@ function generateColors() {
 function getUpdated(index) { 
   // get the hasUpdated bit, then right shift it over 21 to get 0 or 1
   // let updated = pixelView[index];
-  return ((pixelView[index] & 0x00200000) >>> 21);
+  return pixelView[index] & 0x00000020 //) >>> 21);
   // return 0;
 }
 // function setUpdated(status, index) {
@@ -388,49 +388,49 @@ function getUpdated(index) {
 // }
 
 function setUpdated(index) {
-  pixelView[index] |= 0x00200000;
+  pixelView[index] |= 0x00000020;
 }
 function setNotUpdated(index) {
-  pixelView[index] &= 0xFFDFFFFF;
+  pixelView[index] &= 0xFFFFFFDF;
 }
 
 // Two's-complement representation of -1 using 5 bits
-const _FIRE = 0x001F0000; // = 31 or -1
-const _SMOKE = 0x001E0000; // = 30 or -2
+const _FIRE = 0x0000001F; // = 31 or -1
+const _SMOKE = 0x0000001E; // = 30 or -2
 const _BACKGROUND = 0x00000000; // = 0
-const _SAND = 0x00010000; // ? = 1
-const _WATER = 0x00020000; // ? = 2
-const _WOOD = 0x00030000; // ? = 3
+const _SAND = 0x00000001; // ? = 1
+const _WATER = 0x00000002; // ? = 2
+const _WOOD = 0x00000003; // ? = 3
 
 // const _PID = 
 
 function getID(index) {
   // get the 5 id bits, then right shift them over 16 to get the correct value
-  return ((pixelView[index] & 0x001F0000) >> 16); 
+  return (pixelView[index] & 0x0000001F) //>> 16); 
 }
 
 function setID(newId, index) {
   // zero out the 5 id bits, then replace them with the 5 16-left-shifted newId bits
   pixelView[index] &= 0x00000000; //0xFFE0FFFF // 0b11111111111000001111111111111111
-  pixelView[index] |= (newId << 16);
+  pixelView[index] |= newId;
   // pixelView[index] |= newId;
   // set the color of the corresponding newId
   gameImagedata32[index] = getColor(newId);
 }
 
 function getLifeTime(index) {
-  return (pixelView[index] >> 22);
+  return (pixelView[index] >> 6);
 }
 
 function setLifeTime(time, index) {
-  pixelView[index] &= 0x003FFFFF;
-  pixelView[index] |= (time << 22);
+  pixelView[index] &= 0xFFFF003F;
+  pixelView[index] |= (time << 6);
 }
 
 function incrementTime(index) {
-  const lifeTime = (pixelView[index] >> 22) - 1;
-  pixelView[index] &= 0x003FFFFF;
-  pixelView[index] |= (lifeTime << 22);
+  const lifeTime = (pixelView[index] >> 6) - 1;
+  pixelView[index] &= 0xFFFF003F;
+  pixelView[index] |= (lifeTime << 6);
 }
 
 function setEmpty(index) {
@@ -641,6 +641,13 @@ function setup() {
   // }
 }
 
+
+let downId = 0;
+let downLeftId = 0;
+let downRightId = 0;
+let leftId = 0;
+let rightId = 0;
+
 function updateSand(xPos, yPos) {
   // const center = arr2d[xPos][yPos];
   const index = xPos + yPos*arrHeight;
@@ -654,10 +661,11 @@ function updateSand(xPos, yPos) {
   
 
   const downIndex = index + arrHeight;
+  downId = getID(downIndex);
   // const downLeftIndex = (downIndex-1)
 
 // Down, through empty space, fire, or smoke
-  if (getID(downIndex) <= 0) {
+  if (downId <= 0) {
     // down.setID(-2);
     // console.log("Hi")
     swap(index, downIndex);
@@ -665,7 +673,7 @@ function updateSand(xPos, yPos) {
   }
 
   // Down through water
-  if (getID(downIndex) == 2 && !getUpdated(downIndex)) {
+  if (downId == 2 && !getUpdated(downIndex)) {
     swap(index, downIndex);
     return;
   }
@@ -689,33 +697,7 @@ function updateSand(xPos, yPos) {
 }
 
 function updateSandRight(xPos, yPos) {
-//   const center = arr2d[xPos][yPos];
-//   if (center.hasUpdated || yPos == arrHeight - 1) {
-//     return;
-//   }
-//   const down = arr2d[xPos][yPos + 1];
-//   const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
-//   const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
-
-// // Down, through empty space, fire, or smoke
-//   if (down.getID() <= 0) {
-//     // down.setID(-2);
-//     swap(center, down);
-
-//   // Down through water
-//   } else if (down.getID() == 2 && !down.hasUpdated) {
-//     swap(center, down);
-
-//   // Down-Right
-//   } else if (downRight && downRight.getID() == 0) {
-//     swap(center, downRight);
-
-//   // Down-Left
-//   } else if (downLeft && downLeft.getID() == 0) {
-//     swap(center, downLeft);
-//   }
-
-const index = xPos + yPos*arrHeight;
+  const index = xPos + yPos*arrHeight;
 
   if (getUpdated(index) || yPos == arrHeight - 1) {
     return;
@@ -724,17 +706,18 @@ const index = xPos + yPos*arrHeight;
   
 
   const downIndex = index + arrHeight;
+  downId = getID(downIndex);
   // const downLeftIndex = (downIndex-1)
 
 // Down, through empty space, fire, or smoke
-  if (getID(downIndex) <= 0) {
+  if (downId <= 0) {
     // down.setID(-2);
     swap(index, downIndex);
     return;
   }
 
   // Down through water
-  if (getID(downIndex) == 2 && !getUpdated(downIndex)) {
+  if (downId == 2 && !getUpdated(downIndex)) {
     swap(index, downIndex);
     return;
   }
@@ -758,94 +741,122 @@ const index = xPos + yPos*arrHeight;
 }
 
 function updateWater(xPos, yPos) {
-  const center = arr2d[xPos][yPos];
-  if (center.hasUpdated == true) {
+  const index = xPos + yPos*arrHeight;
+
+  // const center = arr2d[xPos][yPos];
+  if (getUpdated(index)) {
     return;
   }
   
-  const down = arr2d[xPos]?.[yPos + 1] ?? 0;
-  const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
-  const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
-  const left = arr2d[xPos - 1]?.[yPos] ?? 0;
-  const right = arr2d[xPos + 1]?.[yPos] ?? 0;
+  // const down = arr2d[xPos]?.[yPos + 1] ?? 0;
+  const downIndex = index + arrHeight;
+  downId = getID(downIndex);
+  // const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
+  // const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
+  // const left = arr2d[xPos - 1]?.[yPos] ?? 0;
+  // const right = arr2d[xPos + 1]?.[yPos] ?? 0;
 
   // Down, through empty space, fire, or smoke
-  if (down && down.getID() <= 0) {
-    if (down.getID() == -1) {
-      down.setID(-2);
-      down.setLifeTime(smokeLife/3);
+  if (yPos < arrHeight-1) {
+    if (downId <= 0) {
+      if (downId == -1) {
+        setID(-2, downIndex);
+        setLifeTime(smokeLife>>1, downIndex);
+      }
+      swap(index, downIndex);
+      return;
     }
-    swap(center, down);
+    // Down-Left
+    if (xPos > 0 && getID(downIndex-1) == 0) {
+      swap(index, downIndex-1);
+      return;
+    }
+    // Down-Right
+    if (xPos < arrWidth-1 && getID(downIndex+1) == 0) {
+      swap(index, downIndex+1);
+      return
+    }
+  }
     
-  // Down-Left
-  } else if (downLeft && downLeft.getID() == 0) {
-    swap(center, downLeft);
-
-  // Down-Right
-  } else if (downRight && downRight.getID() == 0) {
-    swap(center, downRight);
-
-  // Left
-  } else if (left && left.getID() <= 0) {
-    if (left.getID() == -1) {
-      left.setID(-2);
-      left.setLifeTime(smokeLife/3);
+  
+  // Left 
+  if (xPos > 0 && (leftId=getID(index-1)) <= 0) {
+    if (leftId == -1) {
+      setID(-2, index-1);
+      setLifeTime(smokeLife/3, index-1);
+      // left.setLifeTime(smokeLife/3);
     }
-    swap(center, left);
-
+    swap(index, index-1);
+    return;
+  }
   // Right
-  } else if (right && right.getID() == 0) {
-    if (right.getID() == -1) {
-      right.setID(-2);
-      right.setLifeTime(smokeLife/3);
+  if (xPos < arrWidth-1 && (rightId=getID(index+1)) <= 0) {
+    if (rightId == -1) {
+      setID(-2, index+1);
+      setLifeTime(smokeLife/3, index+1);
     }
-    swap(center, right);
+    swap(index, index+1);
+    return;
   }
 }
 
 function updateWaterRight(xPos, yPos) {
-  const center = arr2d[xPos][yPos];
-  if (center.hasUpdated == true) {
+  const index = xPos + yPos*arrHeight;
+
+  // const center = arr2d[xPos][yPos];
+  if (getUpdated(index)) {
     return;
   }
-
-  const down = arr2d[xPos]?.[yPos + 1] ?? 0;
-  const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
-  const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
-  const left = arr2d[xPos - 1]?.[yPos] ?? 0;
-  const right = arr2d[xPos + 1]?.[yPos] ?? 0;
+  
+  // const down = arr2d[xPos]?.[yPos + 1] ?? 0;
+  const downIndex = index + arrHeight;
+  downId = getID(downIndex);
+  // const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
+  // const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
+  // const left = arr2d[xPos - 1]?.[yPos] ?? 0;
+  // const right = arr2d[xPos + 1]?.[yPos] ?? 0;
 
   // Down, through empty space, fire, or smoke
-  if (down && down.getID() <= 0) {
-    if (down.getID() == -1) {
-      down.setID(-2);
-      down.setLifeTime(smokeLife/3);
+  if (yPos < arrHeight-1) {
+    if (downId <= 0) {
+      if (downId == -1) {
+        setID(-2, downIndex);
+        setLifeTime(smokeLife>>1, downIndex);
+      }
+      swap(index, downIndex);
+      return;
     }
-    swap(center, down);
-
-  // Down-Right
-  } else if (downRight && downRight.getID() < 0) {
-    swap(center, downRight);
-
-  // Down-Left
-  } else if (downLeft && downLeft.getID() == 0) {
-    swap(center, downLeft);
-
+    // Down-Right
+    if (xPos < arrWidth-1 && getID(downIndex+1) == 0) {
+      swap(index, downIndex+1);
+      return
+    }
+    // Down-Left
+    if (xPos > 0 && getID(downIndex-1) == 0) {
+      swap(index, downIndex-1);
+      return;
+    }
+  }
+    
+  
   // Right
-  } else if (right && right.getID() == 0) {
-    if (right.getID() == -1) {
-      right.setID(-2);
-      right.setLifeTime(smokeLife/3);
+  if (xPos < arrWidth-1 && (rightId=getID(index+1)) <= 0) {
+    if (rightId == -1) {
+      setID(-2, index+1);
+      setLifeTime(smokeLife/3, index+1);
     }
-    swap(center, right);
-
-  // Left
-  } else if (left && left.getID() == 0) {
-    if (left.getID() == -1) {
-      left.setID(-2);
-      left.setLifeTime(smokeLife/3);
+    swap(index, index+1);
+    return;
+  }
+  // Left 
+  if (xPos > 0 && (leftId=getID(index-1)) <= 0) {
+    if (leftId == -1) {
+      setID(-2, index-1);
+      setLifeTime(smokeLife/3, index-1);
+      // left.setLifeTime(smokeLife/3);
     }
-    swap(center, left);
+    swap(index, index-1);
+    return;
   }
 }
 
