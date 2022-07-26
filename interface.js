@@ -68,7 +68,8 @@ window.updateMouseDrawing = function() {
 function generateElementButtons() {
   const elementTable = document.getElementById("elementTable");
 
-  let elems = ["Smoke", "Fire", "Erase", "Sand", "Water", "Wood"];
+  const elems = ["Smoke", "Fire", "Erase", "Sand", "Water", "Wood"];
+  const ids = [18, 17, 16, 15, 14, 13];
 
   const row = elementTable.insertRow(0);
   for (let i = 0; i < 6; ++i) {
@@ -81,7 +82,7 @@ function generateElementButtons() {
 
     elemButton.value = elems[i];
 
-    elemButton.addEventListener("click", ()=>{drawingWith = i-2; console.log(drawingWith)});
+    elemButton.addEventListener("click", ()=>{drawingWith = ids[i]; console.log(drawingWith)});
   }
 }
 

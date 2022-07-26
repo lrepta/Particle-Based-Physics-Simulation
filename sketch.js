@@ -56,7 +56,7 @@ function init() {
   }
 
   for (var i = 0; i < pixelView.length; ++i) {
-    pixelView[i] = 0;
+    pixelView[i] = _BACKGROUND;
   }
 
   /* Nice crisp pixels, regardless of pixel ratio */
@@ -145,19 +145,19 @@ function mainLoop(now) {
           const index = mx+j + ((my+i)*arrHeight);
 
           // INEFFICIENT, REWRITE
-          if (drawingWith == 0) {
+          if (drawingWith == _BACKGROUND) {
             // arr2d[mx + j][my+ i].setEmpty();
             setEmpty(index);
 
-          } else if (getID(index) == 0 || drawingWith == 0) {
+          } else if (getID(index) == _BACKGROUND || drawingWith == _BACKGROUND) {
             
             // arr2d[mx + j][my+ i].setID(drawingWith, index);
             setID(drawingWith, index);
             setNotUpdated(index);
             // arr2d[mx + j][my + i].setUpdated(false);
-            if (drawingWith == -1) {
+            if (drawingWith == _FIRE) {
               setLifeTime(flameLife + randInt(-15, 0), index);
-            } else if (drawingWith == -2) {
+            } else if (drawingWith == _SMOKE) {
               setLifeTime(smokeLife + randInt(-15, 0), index);
             }
           }
@@ -469,7 +469,8 @@ function updateArr2d() {
         continue;
       }
       
-      functions[direction][getID(index)+offset](x,y);
+      // console.log(getID(index)-_BACKGROUND+offset);
+      functions[direction][getID(index)-_BACKGROUND+offset](x,y);
       
     }
   }
@@ -485,7 +486,7 @@ function updateArr2dRight() {
         continue;
       }
       
-      functions[direction][getID(index)+offset](x,y);
+      functions[direction][getID(index)-_BACKGROUND+offset](x,y);
       
     }
   }
@@ -493,7 +494,7 @@ function updateArr2dRight() {
 
 let direction = 0;
 let brushSize = 2;
-let drawingWith = 1;
+let drawingWith = _SAND;
 // let numParticles = 0;
 
 let flammabilityMatrix = new Array(3);

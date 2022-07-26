@@ -1,10 +1,10 @@
 const noOp = function(x,y){};
-const offset = 2;
+const offset = 3;
 let functionsLeft = new Array();
-functionsLeft.push(updateSmoke, updateFire, noOp, updateSand, updateWater, noOp);
+functionsLeft.push(noOp, updateWater, updateSand, noOp, updateFire, updateSmoke);
 
 let functionsRight = new Array();
-functionsRight.push(updateSmokeRight, updateFireRight, noOp, updateSandRight, updateWaterRight, noOp);
+functionsRight.push(noOp, updateWaterRight, updateSandRight, noOp, updateFireRight, updateSmokeRight);
 
 
 const functions = new Array(functionsLeft, functionsRight);
@@ -16,8 +16,8 @@ let colorIndex = 0;
 
 function getColor(id) {
   let color;
-  color = colors[colorIndex + (id-1)*(flameLife+1)];
-  colorIndex++;
+  color = colors[colorIndex + ((id-(id>_BACKGROUND))-_BACKGROUND+offset)*(flameLife+1)];
+  ++colorIndex;
   colorIndex = colorIndex * (colorIndex < flameLife);
   
   return color;
@@ -34,12 +34,14 @@ function generateColors() {
   for (let i = 0; i < flameLife+1; i++) {
     // abgr
 
-    // sand
-    colors[i + 0*(flameLife+1)] = a + (0+randInt(0,5) << 16) + ((120+randInt(-10, 0)) << 8) + (170+randInt(-10, 40));
+    // wood
+    colors[i + 0*(flameLife+1)] = a + (0+randInt(0,10) << 16) + ((35+randInt(-5, 5)) << 8) + (70+randInt(-5, 5));
     // water
     colors[i + 1*(flameLife+1)] = a + (150+randInt(-5,15) << 16) + ((20+randInt(-5, 5)) << 8) + (20+randInt(-5, 5));
-    // wood
-    colors[i + 2*(flameLife+1)] = a + (0+randInt(0,10) << 16) + ((35+randInt(-5, 5)) << 8) + (70+randInt(-5, 5));
+    // sand
+    colors[i + 2*(flameLife+1)] = a + (0+randInt(0,5) << 16) + ((120+randInt(-10, 0)) << 8) + (170+randInt(-10, 40));
+    
+    
     // fire
     colors[i + 3*(flameLife+1)] = a + (0 << 16) + (i.map(0,flameLife,60,255) << 8) + (i.map(0,flameLife,200,255));
     const smokeVal = i.map(0,flameLife,0,120);
@@ -55,7 +57,7 @@ function generateColors() {
 }
 
 function getUpdated(index) { 
-  // get the hasUpdated bit, then right shift it over 21 to get 0 or 1
+  // get the getUpdated bit, then right shift it over 21 to get 0 or 1
   // let updated = pixelView[index];
   return pixelView[index] & 0x00000020 //) >>> 21);
   // return 0;
@@ -73,13 +75,12 @@ function setNotUpdated(index) {
   pixelView[index] &= 0xFFFFFFDF;
 }
 
-// Two's-complement representation of -1 using 5 bits
-const _FIRE = 0x0000001F; // = 31 or -1
-const _SMOKE = 0x0000001E; // = 30 or -2
-const _BACKGROUND = 0x00000000; // = 0
-const _SAND = 0x00000001; // ? = 1
-const _WATER = 0x00000002; // ? = 2
-const _WOOD = 0x00000003; // ? = 3
+const _SMOKE = 0x00000012; // = 18
+const _FIRE = 0x00000011; // = 17
+const _BACKGROUND = 0x00000010; // = 16
+const _SAND = 0x0000000F; // ? = 15
+const _WATER = 0x0000000E; // ? = 14
+const _WOOD = 0x0000000D; // ? = 13
 
 // const _PID = 
 
@@ -113,7 +114,7 @@ function incrementTime(index) {
 }
 
 function setEmpty(index) {
-  pixelView[index] &= 0x00000000;
+  pixelView[index] &= _BACKGROUND;
   gameImagedata32[index] = BACKGROUND;
 }
 
@@ -152,26 +153,26 @@ function updateSand(xPos, yPos) {
   downId = getID(downIndex);
 
   // Down, through empty space, fire, or smoke
-  if (downId <= 0) {
+  if (downId >= _BACKGROUND) {
     // down.setID(-2);
     swap(index, downIndex);
     return;
   }
 
   // Down through water
-  if (downId == 2 && !getUpdated(downIndex)) {
+  if (downId == _WATER && !getUpdated(downIndex)) {
     swap(index, downIndex);
     return;
   }
 
   // Down-Left
-  if (xPos > 0 && getID(downIndex-1) == 0) {
+  if (xPos > 0 && getID(downIndex-1) == _BACKGROUND) {
     swap(index, downIndex-1);
     return;
   }
 
   // Down-Right
-  if (xPos < arrHeight-1 && getID(downIndex+1) == 0) {
+  if (xPos < arrHeight-1 && getID(downIndex+1) == _BACKGROUND) {
     swap(index, downIndex+1);
     return;
   }
@@ -188,26 +189,26 @@ function updateSandRight(xPos, yPos) {
   downId = getID(downIndex);
 
 // Down, through empty space, fire, or smoke
-  if (downId <= 0) {
+  if (downId >= _BACKGROUND) {
     // down.setID(-2);
     swap(index, downIndex);
     return;
   }
 
   // Down through water
-  if (downId == 2 && !getUpdated(downIndex)) {
+  if (downId == _WATER && !getUpdated(downIndex)) {
     swap(index, downIndex);
     return;
   }
 
   // Down-Right
-  if (xPos < arrHeight-1 && getID(downIndex+1) == 0) {
+  if (xPos < arrHeight-1 && getID(downIndex+1) == _BACKGROUND) {
     swap(index, downIndex+1);
     return;
   }
 
   // Down-Left
-  if (xPos > 0 && getID(downIndex-1) == 0) {
+  if (xPos > 0 && getID(downIndex-1) == _BACKGROUND) {
     swap(index, downIndex-1);
     return;
   }
@@ -225,21 +226,21 @@ function updateWater(xPos, yPos) {
 
   // Down, through empty space, fire, or smoke
   if (yPos < arrHeight-1) {
-    if (downId <= 0) {
-      if (downId == -1) {
-        setID(-2, downIndex);
+    if (downId >= _BACKGROUND) {
+      if (downId == _FIRE) {
+        setID(_SMOKE, downIndex);
         setLifeTime(smokeLife>>1, downIndex);
       }
       swap(index, downIndex);
       return;
     }
     // Down-Left
-    if (xPos > 0 && getID(downIndex-1) == 0) {
+    if (xPos > 0 && getID(downIndex-1) == _BACKGROUND) {
       swap(index, downIndex-1);
       return;
     }
     // Down-Right
-    if (xPos < arrWidth-1 && getID(downIndex+1) == 0) {
+    if (xPos < arrWidth-1 && getID(downIndex+1) == _BACKGROUND) {
       swap(index, downIndex+1);
       return
     }
@@ -247,19 +248,19 @@ function updateWater(xPos, yPos) {
     
   
   // Left 
-  if (xPos > 0 && (leftId=getID(index-1)) <= 0) {
+  if (xPos > 0 && (leftId=getID(index-1)) >= _BACKGROUND) {
     if (leftId == -1) {
-      setID(-2, index-1);
-      setLifeTime(smokeLife/3, index-1);
+      setID(_SMOKE, index-1);
+      setLifeTime(smokeLife>>1, index-1);
     }
     swap(index, index-1);
     return;
   }
   // Right
-  if (xPos < arrWidth-1 && (rightId=getID(index+1)) <= 0) {
-    if (rightId == -1) {
-      setID(-2, index+1);
-      setLifeTime(smokeLife/3, index+1);
+  if (xPos < arrWidth-1 && (rightId=getID(index+1)) >= _BACKGROUND) {
+    if (rightId == _FIRE) {
+      setID(_SMOKE, index+1);
+      setLifeTime(smokeLife>>1, index+1);
     }
     swap(index, index+1);
     return;
@@ -278,21 +279,21 @@ function updateWaterRight(xPos, yPos) {
 
   // Down, through empty space, fire, or smoke
   if (yPos < arrHeight-1) {
-    if (downId <= 0) {
-      if (downId == -1) {
-        setID(-2, downIndex);
+    if (downId >= _BACKGROUND) {
+      if (downId == _FIRE) {
+        setID(_SMOKE, downIndex);
         setLifeTime(smokeLife>>1, downIndex);
       }
       swap(index, downIndex);
       return;
     }
     // Down-Right
-    if (xPos < arrWidth-1 && getID(downIndex+1) == 0) {
+    if (xPos < arrWidth-1 && getID(downIndex+1) == _BACKGROUND) {
       swap(index, downIndex+1);
       return
     }
     // Down-Left
-    if (xPos > 0 && getID(downIndex-1) == 0) {
+    if (xPos > 0 && getID(downIndex-1) == _BACKGROUND) {
       swap(index, downIndex-1);
       return;
     }
@@ -300,19 +301,19 @@ function updateWaterRight(xPos, yPos) {
     
   
   // Right
-  if (xPos < arrWidth-1 && (rightId=getID(index+1)) <= 0) {
-    if (rightId == -1) {
-      setID(-2, index+1);
-      setLifeTime(smokeLife/3, index+1);
+  if (xPos < arrWidth-1 && (rightId=getID(index+1)) >= _BACKGROUND) {
+    if (rightId == _FIRE) {
+      setID(_SMOKE, index+1);
+      setLifeTime(smokeLife>>1, index+1);
     }
     swap(index, index+1);
     return;
   }
   // Left 
-  if (xPos > 0 && (leftId=getID(index-1)) <= 0) {
-    if (leftId == -1) {
-      setID(-2, index-1);
-      setLifeTime(smokeLife/3, index-1);
+  if (xPos > 0 && (leftId=getID(index-1)) >= _BACKGROUND) {
+    if (leftId == _FIRE) {
+      setID(_SMOKE, index-1);
+      setLifeTime(smokeLife>>1, index-1);
     }
     swap(index, index-1);
     return;
@@ -335,7 +336,8 @@ function updateFire(xPos, yPos) {
   // downId = getID(downIndex);
   
   incrementTime(index);
-  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
+  // gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
+  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + (3)*(flameLife+1)];
   
   // Fire hasn't spread to any new particle in its lifetime, exstinguishes
   if (getLifeTime(index) == 0) {
@@ -357,9 +359,9 @@ function updateFire(xPos, yPos) {
           yPos + j > -1 && yPos + j < arrHeight &&
           particlesBurnt < 3) {
         
-        if (getID(surroundingIndex) == 3 &&
+        if (getID(surroundingIndex) == _WOOD &&
             (flammabilityMatrix[i+1][j+1] > 0.225) && particleLife % flammabilityTime == 0) {
-          setID(-1, surroundingIndex);
+          setID(_FIRE, surroundingIndex);
           setLifeTime(flameLife, surroundingIndex);
           setUpdated(index);
 
@@ -370,10 +372,10 @@ function updateFire(xPos, yPos) {
           // arr2d[xPos][yPos].setUpdated(true);
           ++particlesBurnt;
           // Break here if I want it to only spread to 1 new particle
-        } else if (getID(surroundingIndex) == 0 && smokeProduced < 4) {
+        } else if (getID(surroundingIndex) == _BACKGROUND && smokeProduced < 4) {
           if (particleLife % 24 == 0 || particleLife % 30 == 0) {
             setEmpty(surroundingIndex);
-            setID(-2, surroundingIndex);
+            setID(_SMOKE, surroundingIndex);
             setUpdated(surroundingIndex);
             // Shorter lifetime smoke for not consuming particle
             setLifeTime(smokeLife-20, surroundingIndex);
@@ -386,18 +388,18 @@ function updateFire(xPos, yPos) {
   
   // Fire only falls Down
   if (yPos != arrHeight - 1) {
-    if ((downId=getID(downIndex=index+arrHeight)) == 0) {
+    if ((downId=getID(downIndex=index+arrHeight)) == _BACKGROUND) {
       swap(index, downIndex);
       return;
     }
     // Fire can fall through smoke
-    if (downId == -2) {
+    if (downId == _SMOKE) {
       swap(index, downIndex);
       return;
     // If fire lands on water, exstinguish and create steam (smoke)
-    } else if (downId == 2) {
+    } else if (downId == _WATER) {
       setEmpty(index);
-      setID(-2, index);
+      setID(_SMOKE, index);
       setLifeTime(smokeLife>>1, index);
     }
   }
@@ -415,7 +417,8 @@ function updateFireRight(xPos, yPos) {
   // downId = getID(downIndex);
   
   incrementTime(index);
-  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
+  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + (3)*(flameLife+1)];
+  // gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
   
   // Fire hasn't spread to any new particle in its lifetime, exstinguishes
   if (particleLife == 0) {
@@ -437,9 +440,9 @@ function updateFireRight(xPos, yPos) {
           yPos + j > -1 && yPos + j < arrHeight &&
           particlesBurnt < 3) {
         
-        if (getID(surroundingIndex) == 3 &&
+        if (getID(surroundingIndex) == _WOOD &&
             (flammabilityMatrix[i+1][j+1] > 0.225) && particleLife % flammabilityTime == 0) {
-          setID(-1, surroundingIndex);
+          setID(_FIRE, surroundingIndex);
           setLifeTime(flameLife, surroundingIndex);
           setUpdated(index);
 
@@ -450,10 +453,10 @@ function updateFireRight(xPos, yPos) {
           // arr2d[xPos][yPos].setUpdated(true);
           ++particlesBurnt;
           // Break here if I want it to only spread to 1 new particle
-        } else if (getID(surroundingIndex) == 0 && smokeProduced < 4) {
+        } else if (getID(surroundingIndex) == _BACKGROUND && smokeProduced < 4) {
           if (particleLife % 24 == 0 || particleLife % 30 == 0) {
             setEmpty(surroundingIndex);
-            setID(-2, surroundingIndex);
+            setID(_SMOKE, surroundingIndex);
             setUpdated(surroundingIndex);
             // Shorter lifetime smoke for not consuming particle
             setLifeTime(smokeLife-20, surroundingIndex);
@@ -466,18 +469,18 @@ function updateFireRight(xPos, yPos) {
   
   // Fire only falls Down
   if (yPos != arrHeight - 1) {
-    if ((downId=getID(downIndex=index+arrHeight)) == 0) {
+    if ((downId=getID(downIndex=index+arrHeight)) == _BACKGROUND) {
       swap(index, downIndex);
       return;
     }
     // Fire can fall through smoke
-    if (downId == -2) {
+    if (downId == _SMOKE) {
       swap(index, downIndex);
       return;
     // If fire lands on water, exstinguish and create steam (smoke)
-    } else if (downId == 2) {
+    } else if (downId == _WATER) {
       setEmpty(index);
-      setID(-2, index);
+      setID(_SMOKE, index);
       setLifeTime(smokeLife>>1, index);
     }
   }
@@ -490,12 +493,13 @@ let upRightIndex = 0;
 function updateSmoke(xPos, yPos) {
   index = xPos + yPos*arrHeight;
 
-  if (yPos == 0 || hasUpdated(index)) {
+  if (yPos == 0 || getUpdated(index)) {
     return;
   }
   
   incrementTime(index)
-  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
+  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + (4)*(flameLife+1)];
+  // gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
   
   // If smoke is around for more than it's lifetime, it dissipates
   if (particleLife == 0) {
@@ -509,27 +513,27 @@ function updateSmoke(xPos, yPos) {
   // }
 
   // Up
-  if (getID((upIndex=index-arrHeight)) == 0) {
+  if (getID((upIndex=index-arrHeight)) == _BACKGROUND) {
     swap(index, upIndex);
     return;
   }
   // Up-Left
-  if (xPos != 0 && getID(upIndex-1) == 0) {
+  if (xPos != 0 && getID(upIndex-1) == _BACKGROUND) {
     swap(index, upIndex-1);
     return;
   }
   // Up-Right
-  if (xPos != arrWidth - 1 && getID(upIndex+1) == 0) {
+  if (xPos != arrWidth - 1 && getID(upIndex+1) == _BACKGROUND) {
     swap(index, upIndex+1);
     return;
   }
   // Left
-  if (xPos != 0 && getID(index-1) == 0) {
+  if (xPos != 0 && getID(index-1) == _BACKGROUND) {
     swap(index, index-1);
     return;
   }
   // Right
-  if (xPos != arrWidth - 1 && getID(index+1) == 0) {
+  if (xPos != arrWidth - 1 && getID(index+1) == _BACKGROUND) {
     swap(index, index+1);
     return;
   }
@@ -538,12 +542,13 @@ function updateSmoke(xPos, yPos) {
 function updateSmokeRight(xPos, yPos) {
   index = xPos + yPos*arrHeight;
 
-  if (yPos == 0 || hasUpdated(index)) {
+  if (yPos == 0 || getUpdated(index)) {
     return;
   }
   
   incrementTime(index)
-  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
+  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + (4)*(flameLife+1)];
+  // gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
   
   // If smoke is around for more than it's lifetime, it dissipates
   if (particleLife == 0) {
@@ -557,27 +562,27 @@ function updateSmokeRight(xPos, yPos) {
   // }
 
   // Up
-  if (getID((upIndex=index-arrHeight)) == 0) {
+  if (getID((upIndex=index-arrHeight)) == _BACKGROUND) {
     swap(index, upIndex);
     return;
   }
   // Up-Right
-  if (xPos != arrWidth - 1 && getID(upIndex+1) == 0) {
+  if (xPos != arrWidth - 1 && getID(upIndex+1) == _BACKGROUND) {
     swap(index, upIndex+1);
     return;
   }
   // Up-Left
-  if (xPos != 0 && getID(upIndex-1) == 0) {
+  if (xPos != 0 && getID(upIndex-1) == _BACKGROUND) {
     swap(index, upIndex-1);
     return;
   }
   // Right
-  if (xPos != arrWidth - 1 && getID(index+1) == 0) {
+  if (xPos != arrWidth - 1 && getID(index+1) == _BACKGROUND) {
     swap(index, index+1);
     return;
   }
   // Left
-  if (xPos != 0 && getID(index-1) == 0) {
+  if (xPos != 0 && getID(index-1) == _BACKGROUND) {
     swap(index, index-1);
     return;
   }
