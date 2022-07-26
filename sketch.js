@@ -135,7 +135,7 @@ function mainLoop(now) {
           if (mx + j > arrWidth - 1 || mx + j < 0) {
             continue;
           }
-          if(drawingWith != 3 && drawingWith != 0) {
+          if(drawingWith != _WOOD && drawingWith != _BACKGROUND) {
             let randomSpread = randInt(0, 6);
             if (randomSpread != 5) {
               continue;

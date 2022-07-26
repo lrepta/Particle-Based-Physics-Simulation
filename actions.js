@@ -114,7 +114,7 @@ function incrementTime(index) {
 }
 
 function setEmpty(index) {
-  pixelView[index] &= _BACKGROUND;
+  pixelView[index] = _BACKGROUND;
   gameImagedata32[index] = BACKGROUND;
 }
 
