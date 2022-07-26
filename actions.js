@@ -133,6 +133,8 @@ function swap(index1, index2) {
 }
 
 
+let index = 0;
+let downIndex = 0;
 let downId = 0;
 let downLeftId = 0;
 let downRightId = 0;
@@ -140,25 +142,18 @@ let leftId = 0;
 let rightId = 0;
 
 function updateSand(xPos, yPos) {
-  // const center = arr2d[xPos][yPos];
-  const index = xPos + yPos*arrHeight;
-  // console.log("bye");
+  index = xPos + yPos*arrHeight;
 
   if (getUpdated(index) || yPos == arrHeight - 1) {
-    // console.log("bye");
     return;
   }
-  // const down = arr2d[xPos][yPos + 1];
-  
 
-  const downIndex = index + arrHeight;
+  downIndex = index + arrHeight;
   downId = getID(downIndex);
-  // const downLeftIndex = (downIndex-1)
 
-// Down, through empty space, fire, or smoke
+  // Down, through empty space, fire, or smoke
   if (downId <= 0) {
     // down.setID(-2);
-    // console.log("Hi")
     swap(index, downIndex);
     return;
   }
@@ -168,11 +163,6 @@ function updateSand(xPos, yPos) {
     swap(index, downIndex);
     return;
   }
-
-  // const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
-  // const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
-
-  // const downLeftIndex = downIndex-1 * (xPos > 0);
 
   // Down-Left
   if (xPos > 0 && getID(downIndex-1) == 0) {
@@ -188,17 +178,14 @@ function updateSand(xPos, yPos) {
 }
 
 function updateSandRight(xPos, yPos) {
-  const index = xPos + yPos*arrHeight;
+  index = xPos + yPos*arrHeight;
 
   if (getUpdated(index) || yPos == arrHeight - 1) {
     return;
   }
-  // const down = arr2d[xPos][yPos + 1];
-  
 
-  const downIndex = index + arrHeight;
+  downIndex = index + arrHeight;
   downId = getID(downIndex);
-  // const downLeftIndex = (downIndex-1)
 
 // Down, through empty space, fire, or smoke
   if (downId <= 0) {
@@ -212,11 +199,6 @@ function updateSandRight(xPos, yPos) {
     swap(index, downIndex);
     return;
   }
-
-  // const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
-  // const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
-
-  // const downLeftIndex = downIndex-1 * (xPos > 0);
 
   // Down-Right
   if (xPos < arrHeight-1 && getID(downIndex+1) == 0) {
@@ -232,20 +214,14 @@ function updateSandRight(xPos, yPos) {
 }
 
 function updateWater(xPos, yPos) {
-  const index = xPos + yPos*arrHeight;
+  index = xPos + yPos*arrHeight;
 
-  // const center = arr2d[xPos][yPos];
   if (getUpdated(index)) {
     return;
   }
   
-  // const down = arr2d[xPos]?.[yPos + 1] ?? 0;
-  const downIndex = index + arrHeight;
+  downIndex = index + arrHeight;
   downId = getID(downIndex);
-  // const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
-  // const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
-  // const left = arr2d[xPos - 1]?.[yPos] ?? 0;
-  // const right = arr2d[xPos + 1]?.[yPos] ?? 0;
 
   // Down, through empty space, fire, or smoke
   if (yPos < arrHeight-1) {
@@ -275,7 +251,6 @@ function updateWater(xPos, yPos) {
     if (leftId == -1) {
       setID(-2, index-1);
       setLifeTime(smokeLife/3, index-1);
-      // left.setLifeTime(smokeLife/3);
     }
     swap(index, index-1);
     return;
@@ -292,20 +267,14 @@ function updateWater(xPos, yPos) {
 }
 
 function updateWaterRight(xPos, yPos) {
-  const index = xPos + yPos*arrHeight;
+  index = xPos + yPos*arrHeight;
 
-  // const center = arr2d[xPos][yPos];
   if (getUpdated(index)) {
     return;
   }
   
-  // const down = arr2d[xPos]?.[yPos + 1] ?? 0;
-  const downIndex = index + arrHeight;
+  downIndex = index + arrHeight;
   downId = getID(downIndex);
-  // const downLeft = arr2d[xPos - 1]?.[yPos + 1] ?? 0;
-  // const downRight = arr2d[xPos + 1]?.[yPos + 1] ?? 0;
-  // const left = arr2d[xPos - 1]?.[yPos] ?? 0;
-  // const right = arr2d[xPos + 1]?.[yPos] ?? 0;
 
   // Down, through empty space, fire, or smoke
   if (yPos < arrHeight-1) {
@@ -344,38 +313,42 @@ function updateWaterRight(xPos, yPos) {
     if (leftId == -1) {
       setID(-2, index-1);
       setLifeTime(smokeLife/3, index-1);
-      // left.setLifeTime(smokeLife/3);
     }
     swap(index, index-1);
     return;
   }
 }
 
-function updateFire(xPos, yPos) {
-  const particle = arr2d[xPos][yPos];
-  // const bottomBoundary = (yPos != arrHeight-1) * 2;
-  // const topBoundary = (yPos != 0) * -1;
-  // const leftBoundary = (xPos != 0) * -1;
-  // const rightBoundary = ()
+let particlesBurnt = 0;
+let smokeProduced = 0;
+let particleLife = 0;
+let surroundingIndex = 0;
 
-  if (particle.hasUpdated == true) {
+function updateFire(xPos, yPos) {
+  index = xPos + yPos*arrHeight;
+
+  if (getUpdated(index)) {
     return;
   }
   
-  particle.incrementTime();
-  particle.col = colors[particle.lifeTime + ((particle.id*-1)+2)*(flameLife+1)];
+  // downIndex = index + arrHeight;
+  // downId = getID(downIndex);
+  
+  incrementTime(index);
+  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
   
   // Fire hasn't spread to any new particle in its lifetime, exstinguishes
-  if (particle.getLifeTime() < 0) {
-    particle.setEmpty();
+  if (getLifeTime(index) == 0) {
+    setEmpty(index);
     return;
   }
   
-  let particlesBurnt = 0;
-  let smokeProduced = 0;
+  particlesBurnt = 0;
+  smokeProduced = 0;
   // Burn any flammable particles around the fire particle
-  for (let i = -1; i < 2; i++) {
-    for(let j = -1; j < 2; j++) {
+  for (let j = -1; j < 2; ++j) {
+    for(let i = -1; i < 2; ++i) {
+      surroundingIndex = index + i + (arrHeight * j);
       // randomSpread = Math.floor(random(0, 15));
       // if (randomSpread != 14) {
       //   continue;
@@ -384,206 +357,228 @@ function updateFire(xPos, yPos) {
           yPos + j > -1 && yPos + j < arrHeight &&
           particlesBurnt < 3) {
         
-        if (arr2d[xPos+i][yPos + j].getID() == 3 &&
-            (flammabilityMatrix[i+1][j+1] > 0.225) && arr2d[xPos][yPos].getLifeTime() % flammabilityTime == 0) {
-          arr2d[xPos+i][yPos + j].setID(-1);
-          arr2d[xPos+i][yPos + j].setLifeTime(flameLife);
-          arr2d[xPos+i][yPos + j].setUpdated(true);
+        if (getID(surroundingIndex) == 3 &&
+            (flammabilityMatrix[i+1][j+1] > 0.225) && particleLife % flammabilityTime == 0) {
+          setID(-1, surroundingIndex);
+          setLifeTime(flameLife, surroundingIndex);
+          setUpdated(index);
 
           // arr2d[xPos][yPos].setEmpty();
           // // Replace the former fire particle with smoke particle
           // arr2d[xPos][yPos].setID(-2);
           // arr2d[xPos][yPos].setLifeTime(240);
           // arr2d[xPos][yPos].setUpdated(true);
-          particlesBurnt++;
+          ++particlesBurnt;
           // Break here if I want it to only spread to 1 new particle
-        } else if (arr2d[xPos+i][yPos + j].getID() == 0 &&
-                   smokeProduced < 4) {
-            if (particle.getLifeTime() % 24 == 0 ||
-            particle.getLifeTime() % 30 == 0) {
-              arr2d[xPos+i][yPos + j].setEmpty();
-              arr2d[xPos+i][yPos + j].setID(-2);
-              arr2d[xPos+i][yPos + j].setUpdated(true);
-              // Shorter lifetime smoke for not consuming particle
-              arr2d[xPos+i][yPos + j].setLifeTime(smokeLife-20);
-              smokeProduced++;
-            }
+        } else if (getID(surroundingIndex) == 0 && smokeProduced < 4) {
+          if (particleLife % 24 == 0 || particleLife % 30 == 0) {
+            setEmpty(surroundingIndex);
+            setID(-2, surroundingIndex);
+            setUpdated(surroundingIndex);
+            // Shorter lifetime smoke for not consuming particle
+            setLifeTime(smokeLife-20, surroundingIndex);
+            ++smokeProduced;
+          }
         }
       }
     }
   }
   
   // Fire only falls Down
-  if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() == 0) {
-    swap(particle, arr2d[xPos][yPos + 1]);
-
-  // Fire can fall through smoke
-  } else if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() == -2) {
-    swap(particle, arr2d[xPos][yPos + 1]);
-
-  // If fire lands on water, exstinguish and create steam (smoke)
-  } else if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() == 2) {
-    particle.setEmpty();
-    particle.setID(-2);
-    particle.setLifeTime(smokeLife/3);
+  if (yPos != arrHeight - 1) {
+    if ((downId=getID(downIndex=index+arrHeight)) == 0) {
+      swap(index, downIndex);
+      return;
+    }
+    // Fire can fall through smoke
+    if (downId == -2) {
+      swap(index, downIndex);
+      return;
+    // If fire lands on water, exstinguish and create steam (smoke)
+    } else if (downId == 2) {
+      setEmpty(index);
+      setID(-2, index);
+      setLifeTime(smokeLife>>1, index);
+    }
   }
+  
 }
 
 function updateFireRight(xPos, yPos) {
-  const particle = arr2d[xPos][yPos];
-  
-  if (particle.hasUpdated == true) {
+  index = xPos + yPos*arrHeight;
+
+  if (getUpdated(index)) {
     return;
   }
   
-  particle.incrementTime();
-  particle.col = colors[particle.lifeTime + ((particle.id*-1)+2)*(flameLife+1)];
+  // downIndex = index + arrHeight;
+  // downId = getID(downIndex);
   
-  // Fire hasn't spread to any new particle in it's lifetime, exstinguishes
-  if (particle.getLifeTime() < 0) {
-    particle.setEmpty();
+  incrementTime(index);
+  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
+  
+  // Fire hasn't spread to any new particle in its lifetime, exstinguishes
+  if (particleLife == 0) {
+    setEmpty(index);
     return;
   }
   
-  let particlesBurnt = 0;
-  let smokeProduced = 0;
+  particlesBurnt = 0;
+  smokeProduced = 0;
   // Burn any flammable particles around the fire particle
-  for (let i = 1; i > -2; i--) {
-    for(let j = 1; j > -2; j--) {
+  for (let j = 1; j > -2; --j) {
+    for(let i = 1; i > -2; --i) {
+      surroundingIndex = index + i + (arrHeight * j);
+      // randomSpread = Math.floor(random(0, 15));
+      // if (randomSpread != 14) {
+      //   continue;
+      // }
       if (xPos + i > -1 && xPos + i < arrWidth &&
           yPos + j > -1 && yPos + j < arrHeight &&
           particlesBurnt < 3) {
         
-        // randomSpread = Math.floor(random(0, 15));
-        // if (randomSpread != 14) {
-        //   continue;
-        // }
-        
-        if (arr2d[xPos+i][yPos + j].getID() == 3 &&
-            (flammabilityMatrix[i+1][j+1] > 0.225) && particle.getLifeTime() % flammabilityTime == 0) {
-          arr2d[xPos+i][yPos + j].setID(-1);
-          arr2d[xPos+i][yPos + j].setLifeTime(flameLife);
-          arr2d[xPos+i][yPos + j].setUpdated(true);
+        if (getID(surroundingIndex) == 3 &&
+            (flammabilityMatrix[i+1][j+1] > 0.225) && particleLife % flammabilityTime == 0) {
+          setID(-1, surroundingIndex);
+          setLifeTime(flameLife, surroundingIndex);
+          setUpdated(index);
 
           // arr2d[xPos][yPos].setEmpty();
           // // Replace the former fire particle with smoke particle
           // arr2d[xPos][yPos].setID(-2);
           // arr2d[xPos][yPos].setLifeTime(240);
           // arr2d[xPos][yPos].setUpdated(true);
-          particlesBurnt++;
+          ++particlesBurnt;
           // Break here if I want it to only spread to 1 new particle
-        } else if (arr2d[xPos+i][yPos + j].getID() == 0 &&
-                   smokeProduced < 4) {
-            if (particle.getLifeTime() % 24 == 0 ||
-            particle.getLifeTime() % 30 == 0) {
-              arr2d[xPos+i][yPos + j].setEmpty();
-              arr2d[xPos+i][yPos + j].setID(-2);
-              arr2d[xPos+i][yPos + j].setUpdated(true);
-              // Shorter lifetime smoke for not consuming particle
-              arr2d[xPos+i][yPos + j].setLifeTime(smokeLife-20);
-              smokeProduced++;
-            }
+        } else if (getID(surroundingIndex) == 0 && smokeProduced < 4) {
+          if (particleLife % 24 == 0 || particleLife % 30 == 0) {
+            setEmpty(surroundingIndex);
+            setID(-2, surroundingIndex);
+            setUpdated(surroundingIndex);
+            // Shorter lifetime smoke for not consuming particle
+            setLifeTime(smokeLife-20, surroundingIndex);
+            ++smokeProduced;
+          }
         }
       }
     }
   }
   
   // Fire only falls Down
-  if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() == 0) {
-    swap(particle, arr2d[xPos][yPos + 1]);
-
-  // Fire can fall through smoke
-  } else if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() == -2) {
-    swap(particle, arr2d[xPos][yPos + 1]);
-
-  // If fire lands on water, exstinguish and create steam (smoke)
-  } else if (yPos != arrHeight - 1 && arr2d[xPos][yPos + 1].getID() == 2) {
-    particle.setEmpty();
-    particle.setID(-2);
-    particle.setLifeTime(smokeLife/3);
+  if (yPos != arrHeight - 1) {
+    if ((downId=getID(downIndex=index+arrHeight)) == 0) {
+      swap(index, downIndex);
+      return;
+    }
+    // Fire can fall through smoke
+    if (downId == -2) {
+      swap(index, downIndex);
+      return;
+    // If fire lands on water, exstinguish and create steam (smoke)
+    } else if (downId == 2) {
+      setEmpty(index);
+      setID(-2, index);
+      setLifeTime(smokeLife>>1, index);
+    }
   }
 }
 
-function updateSmoke(xPos, yPos) {
-  const particle = arr2d[xPos][yPos];
+let upIndex = 0;
+let upLeftIndex = 0;
+let upRightIndex = 0;
 
-  if (particle.hasUpdated == true) {
+function updateSmoke(xPos, yPos) {
+  index = xPos + yPos*arrHeight;
+
+  if (yPos == 0 || hasUpdated(index)) {
     return;
   }
   
-  particle.incrementTime();
-  particle.col = colors[particle.lifeTime + ((particle.id*-1)+2)*(flameLife+1)];
+  incrementTime(index)
+  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
   
   // If smoke is around for more than it's lifetime, it dissipates
-  if (particle.getLifeTime() < 0) {
-    particle.setEmpty();
+  if (particleLife == 0) {
+    setEmpty(index);
     return;
   }
-  if (yPos == 0) {
-    arr2d[xPos][yPos].setUpdated(true);
-    return;
-  }
+  // if (yPos == 0) {
+  //   // unecessary
+  //   // setUpdated(index);
+  //   return;
+  // }
 
   // Up
-  if (arr2d[xPos][yPos - 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos][yPos - 1]);
-
+  if (getID((upIndex=index-arrHeight)) == 0) {
+    swap(index, upIndex);
+    return;
+  }
   // Up-Left
-  } else if (xPos != 0 && arr2d[xPos - 1][yPos - 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos - 1]);
-
+  if (xPos != 0 && getID(upIndex-1) == 0) {
+    swap(index, upIndex-1);
+    return;
+  }
   // Up-Right
-  } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos - 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos - 1]);
-
+  if (xPos != arrWidth - 1 && getID(upIndex+1) == 0) {
+    swap(index, upIndex+1);
+    return;
+  }
   // Left
-  } else if (xPos != 0 && arr2d[xPos - 1][yPos].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos]);
-
+  if (xPos != 0 && getID(index-1) == 0) {
+    swap(index, index-1);
+    return;
+  }
   // Right
-  } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos]);
+  if (xPos != arrWidth - 1 && getID(index+1) == 0) {
+    swap(index, index+1);
+    return;
   }
 }
 
 function updateSmokeRight(xPos, yPos) {
-  const particle = arr2d[xPos][yPos];
+  index = xPos + yPos*arrHeight;
 
-  if (arr2d[xPos][yPos].hasUpdated == true) {
+  if (yPos == 0 || hasUpdated(index)) {
     return;
   }
   
-  arr2d[xPos][yPos].incrementTime();
-  particle.col = colors[particle.lifeTime + ((particle.id*-1)+2)*(flameLife+1)];
+  incrementTime(index)
+  gameImagedata32[index] = colors[(particleLife=getLifeTime(index)) + ((getID(index)*-1)+2)*(flameLife+1)];
   
   // If smoke is around for more than it's lifetime, it dissipates
-  if (arr2d[xPos][yPos].getLifeTime() < 0) {
-    arr2d[xPos][yPos].setEmpty();
+  if (particleLife == 0) {
+    setEmpty(index);
     return;
   }
-  if (yPos == 0) {
-    arr2d[xPos][yPos].setUpdated(true);
-    return;
-  }
+  // if (yPos == 0) {
+  //   // unecessary
+  //   // setUpdated(index);
+  //   return;
+  // }
 
   // Up
-  if (arr2d[xPos][yPos - 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos][yPos - 1]);
-
+  if (getID((upIndex=index-arrHeight)) == 0) {
+    swap(index, upIndex);
+    return;
+  }
   // Up-Right
-  } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos - 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos - 1]);
-
-  // Up-left
-  } else if (xPos != 0 && arr2d[xPos - 1][yPos - 1].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos - 1]);
-
+  if (xPos != arrWidth - 1 && getID(upIndex+1) == 0) {
+    swap(index, upIndex+1);
+    return;
+  }
+  // Up-Left
+  if (xPos != 0 && getID(upIndex-1) == 0) {
+    swap(index, upIndex-1);
+    return;
+  }
   // Right
-  } else if (xPos != arrWidth - 1 && arr2d[xPos + 1][yPos].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos + 1][yPos]);
-
+  if (xPos != arrWidth - 1 && getID(index+1) == 0) {
+    swap(index, index+1);
+    return;
+  }
   // Left
-  } else if (xPos != 0 && arr2d[xPos - 1][yPos].getID() == 0) {
-    swap(arr2d[xPos][yPos], arr2d[xPos - 1][yPos]);
+  if (xPos != 0 && getID(index-1) == 0) {
+    swap(index, index-1);
+    return;
   }
 }
