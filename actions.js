@@ -25,6 +25,31 @@ function getColor(id) {
 
 let colors;
 
+const _HSL_SAND = [40, 65, 60];
+function vary_color(hsl) {
+  let [h, s, l] = hsl;
+
+  s = Math.max(s + randInt(-20, 0), 0);
+  l = Math.min(Math.max(s + randInt(-10, 10), 0), 100);
+
+  return HSL_to_RGB(h, s, l);
+}
+
+function HSL_to_RGB(h, s, l) {
+  // let [h, s, l] = hsl;
+  s /= 100;
+  l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n =>
+    l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    // return [255 * f(0), 255 * f(8), 255 * f(4)];
+  return ( Math.round((255 * f(4)) << 16) +  (Math.round((255 * f(8))) << 8) + (Math.round((255 * f(0)))));
+}
+
+// console.log(HSL_to_RGB(40, 65, 60));
+// console.log(0x00000000 + HSL_to_RGB(_HSL_SAND));
+
 function generateColors() {
   const numParticles = 5;
   colors = new Int32Array(5 * (flameLife+1));
@@ -39,8 +64,8 @@ function generateColors() {
     // water
     colors[i + 1*(flameLife+1)] = a + (150+randInt(-5,15) << 16) + ((20+randInt(-5, 5)) << 8) + (20+randInt(-5, 5));
     // sand
-    colors[i + 2*(flameLife+1)] = a + (0+randInt(0,5) << 16) + ((120+randInt(-10, 0)) << 8) + (170+randInt(-10, 40));
-    
+    // colors[i + 2*(flameLife+1)] = a + (89+randInt(0,5) << 16) + ((177+randInt(-10, 0)) << 8) + (220+randInt(-10, 20));
+    colors[i + 2*(flameLife+1)] = a + vary_color(_HSL_SAND);
     
     // fire
     colors[i + 3*(flameLife+1)] = a + (0 << 16) + (i.map(0,flameLife,60,255) << 8) + (i.map(0,flameLife,200,255));

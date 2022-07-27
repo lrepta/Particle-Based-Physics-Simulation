@@ -25,12 +25,11 @@ const gameCtx = gameCanvas.getContext("2d");
 const gameImagedata = gameCtx.createImageData(size, size);
 
 const pixelData = new ArrayBuffer(4*size*size); // 32 bit for each particle
-// bits 0-9 are lifetime
-// bit 10 is hasUpdated
-// bits 11-15 are id
+// bits 6-15 are lifetime
+// bit 5 is hasUpdated
+// bits 0-4 are id
 // bits 16-31 unused for now
 const pixelView = new Uint32Array(pixelData);
-// alert(gameImagedata.)
 const gameImagedata32 = new Uint32Array(gameImagedata.data.buffer);
 
 function init() {
@@ -135,6 +134,11 @@ function mainLoop(now) {
           if (mx + j > arrWidth - 1 || mx + j < 0) {
             continue;
           }
+
+          if (Math.sqrt(i*i + j*j) > brushSize) {
+            continue;
+          }
+
           if(drawingWith != _WOOD && drawingWith != _BACKGROUND) {
             let randomSpread = randInt(0, 6);
             if (randomSpread != 5) {
@@ -279,96 +283,6 @@ const WATER = __inGameColor(0, 10, 255);
 const WOOD = __inGameColor(70, 35, 0);
 
 
-// Particle types are:
-//  -2 -> Smoke
-//  -1 -> Fire
-//   0 -> Empty space
-//   1 -> Sand
-//   2 -> Water
-//   3 -> Wood
-class Pixel {
-
-  // Only run at startup so conditional is fine?
-  constructor(inputId, inputUpdate, particleLifeTime) {
-    this.id = inputId;
-    this.hasUpdated = inputUpdate;
-    this.lifeTime = particleLifeTime;
-    // this.color = getColor(inputId);
-    
-    this.col = BACKGROUND;
-    if (inputId != 0) {
-      this.col = getColor(inputId);
-    }
-
-    // pixelView[]
-    
-  }
-  
-  getUpdated() { return this.hasUpdated; }
-  setUpdated(status) { this.hasUpdated = status; }
-  
-  getID() { return this.id; }
-  setID(newID) { 
-    this.id = newID;
-    // this.color = getColor(newID);
-    // console.log(this.color)
-    // const [r, g, b, _] = this.color.levels;
-    
-    // console.log(this.color.levels)
-    // this.col = 0xff000000 + (b << 16) + (g << 8) + r;
-    this.col = getColor(this.id);
-  }
-
-  swap(other) {
-    [this.id, other.id] = [other.id, this.id];
-    // [this.color, other.color] = [other.color, this.color];
-    [this.lifeTime, other.lifeTime] = [other.lifeTime, this.lifeTime];
-    this.hasUpdated = other.hasUpdated = true;
-    this.col = this.col ^ other.col;
-    other.col = this.col ^ other.col;
-    this.col = this.col ^ other.col;
-  }
-
-  updateColor() {
-    // if (this.id < 0) {
-    //   // NEEDS FIXING AND GENERALIZING
-    //   this.col = colors[this.lifeTime + ((this.id*-1)+2)*(flameLife+1)];
-    // }
-    
-    // if (this.id == -1) {
-    //   this.col = colorTable.fire[this.lifeTime];
-
-    //   // let r, g, b, a = this.color.values;
-    //   // this.col = 0xff000000 + + (b << 16) + (g << 8) + r;
-    //   // console.log(this.lifeTime)
-    //   // console.log(flameLife)
-    //   // console.log(this.color)
-
-    //   // const [r, g, b, _] = this.color.levels;
-    //   // this.col = 0xff000000 + (b << 16) + (g << 8) + r;
-    // } else {
-    //   this.col = colorTable.smoke[this.lifeTime];
-    //   // let r, g, b, a = this.color.values;
-    //   // this.col = 0xff000000 + + (b << 16) + (g << 8) + r;
-
-    //   // const [r, g, b, _] = this.color.levels;
-    //   // this.col = 0xff000000 + (b << 16) + (g << 8) + r;
-    // }
-    
-  }
-  
-  getLifeTime() { return this.lifeTime; }
-  setLifeTime(time) { this.lifeTime = time; }
-  incrementTime() { this.lifeTime--; }
-  
-  setEmpty() {
-    this.id = 0;
-    this.hasUpdated = 0;
-    this.lifeTime = 0;
-    this.col = BACKGROUND;
-  }
-}
-
 // function swap(first, second) {
 //   [first.id, second.id] = [second.id, first.id];
 //   // [first.color, second.color] = [second.color, first.color];
@@ -380,14 +294,14 @@ class Pixel {
 // }
 
 
-let arr2d;
+// let arr2d;
 let arrWidth = 140;
 let arrHeight = 140;
 
 let graphicsSetting = 3; // Medium = 140x140
-let flameLife = 160;
-let smokeLife = 150;
-let UItextSize = 11;
+// let flameLife = 160;
+// let smokeLife = 150;
+// let UItextSize = 11;
 
 let evenFrame = true;
 
@@ -423,30 +337,30 @@ window.loadGraphicsSetting = function(level) {
   }
   // brushSize = 2;
   generateColors();
-  buildArray();
+  // buildArray();
 }
 
-let pixelBuffer;
+// let pixelBuffer;
 
-function buildArray() {
-  arr2d = new Array(arrWidth);
+// function buildArray() {
+//   arr2d = new Array(arrWidth);
 
-  for (let i = 0; i < arr2d.length; i++) {
-    arr2d[i] = new Array(arrHeight);
-  }
+//   for (let i = 0; i < arr2d.length; i++) {
+//     arr2d[i] = new Array(arrHeight);
+//   }
   
-  for (let i = 0; i < arrWidth; i++) {
-    for (let j = 0; j < arrHeight; j++) {
-      arr2d[i][j] = new Pixel(0, false, 0);
-    }
-  }
-}
+//   for (let i = 0; i < arrWidth; i++) {
+//     for (let j = 0; j < arrHeight; j++) {
+//       arr2d[i][j] = new Pixel(0, false, 0);
+//     }
+//   }
+// }
 
 function setup() {
   // createCanvas(2.5*arrWidth, arrHeight);
   loadGraphicsSetting(graphicsSetting);
   // generateColors();
-  buildArray()
+  // buildArray()
   // pixelBuffer = createImage(arrWidth, arrHeight);
   // pixelBuffer = createImage(arrWidth, arrHeight);
   // pixelBuffer.loadPixels();
@@ -493,7 +407,7 @@ function updateArr2dRight() {
 }
 
 let direction = 0;
-let brushSize = 2;
+let brushSize = 8;
 let drawingWith = _SAND;
 // let numParticles = 0;
 
